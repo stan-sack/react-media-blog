@@ -1,0 +1,6 @@
+{
+  "name": "Earth",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Earth.js"
+}
