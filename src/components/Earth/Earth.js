@@ -15,6 +15,11 @@ class Earth extends React.Component {
     //set this closer to zero to mark the arc sit on the earth
     this.arcHeightFactor = 0.5;
 
+    this.state = {
+      cubeRotation: new THREE.Euler(),
+      primaryMarkerPosition: 0
+    };
+
     this.destinations = [
       {dest: 'Adelaide', lat: -34.9288, lon: 138.6007},
       {dest: 'Sydney', lat: -33.8688, lon: 151.2093},
@@ -42,21 +47,19 @@ class Earth extends React.Component {
     this.cameraPosition = new THREE.Vector3(0, 0, 2);
     this.lightPosition = new THREE.Vector3(9, 9, 9);
 
-    this.state = {
-      cubeRotation: new THREE.Euler(),
-    };
     this._onAnimate = () => {
       // we will get this callback every frame
 
       // pretend cubeRotation is immutable.
       // this helps with updates and pure rendering.
       // React will be sure that the rotation has now updated.
+      let positionToSet = this.state.primaryMarkerPosition + 1
+      if (this.state.primaryMarkerPosition >= this.travelPath.length || typeof this.state.primaryMarkerPosition == 'undefined'){
+        positionToSet = 0;
+      }
       this.setState({
-        cubeRotation: new THREE.Euler(
-          0,
-          this.state.cubeRotation.y + 0.01,
-          0
-        ),
+        cubeRotation: new THREE.Euler(0, this.state.cubeRotation.y + 0.0, 0),
+        primaryMarkerPosition: positionToSet
       });
     };
     this.addMarker = (locationObject) => {
@@ -74,13 +77,35 @@ class Earth extends React.Component {
             color={colory}/>
         </mesh>
       )
-
       return marker
     }
 
     this.plotPoints = () => {
       var markers = this.destinations.map(this.addMarker);
       return markers;
+    }
+    this.generatePrimaryMarker = () => {
+      let markerSubset = []
+      if (this.state.primaryMarkerPosition < 20) {
+        markerSubset = this.travelPath.slice(0,this.state.primaryMarkerPosition)
+      } else {
+        markerSubset = this.travelPath.slice(this.state.primaryMarkerPosition-20,this.state.primaryMarkerPosition)
+      }
+      let markerSpheres = markerSubset.map((marker, index) => {
+        return(
+          <mesh
+            key={index}
+            position={marker}>
+            <sphereGeometry
+              radius={index/1000}
+              widthSegments={16}
+              heightSegments={16}/>
+            <meshBasicMaterial
+              color={new THREE.Color( 'red' )}/>
+          </mesh>
+        )
+      })
+      return markerSpheres
     }
 
     this.createSphereArcs = () => {
@@ -115,8 +140,10 @@ class Earth extends React.Component {
         travelPath.push(curve);
         i++;
       }
+
       return travelPath;
     }
+
     this.drawCurves = (curve, index) => {
       let curves = this.createSphereArcs();
 
@@ -146,14 +173,17 @@ class Earth extends React.Component {
     this.map = ( x,  in_min,  in_max,  out_min,  out_max) => {
       return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
+
+    let curves = this.createSphereArcs();
+    curves.map((curve, index) => {
+      this.travelPath = this.travelPath.concat(curve.getPoints(100))
+    })
   }
 
   componentDidMount(){
     this.height = window.innerHeight;
     this.width = window.innerWidth;
   }
-
-
 
   render() {
     return(
@@ -199,12 +229,12 @@ class Earth extends React.Component {
           </mesh>
           {this.plotPoints()}
           {this.drawCurves()}
+          {this.generatePrimaryMarker()}
         </scene>
       </React3>
     );
   }
 }
-
 
 
 
