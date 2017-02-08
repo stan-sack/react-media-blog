@@ -12,11 +12,13 @@ class Earth extends React.Component {
     this.width = 300;
     this.earthRadius = 1;
     this.travelPath = [];
+    this.cameraDistance = 2;
+    this.lightDistance = 16;
+    this.comet = [];
     //set this closer to zero to mark the arc sit on the earth
     this.arcHeightFactor = 0.5;
 
     this.state = {
-      cubeRotation: new THREE.Euler(),
       primaryMarkerPosition: 0
     };
 
@@ -26,7 +28,8 @@ class Earth extends React.Component {
       {dest: 'Ulaanbaatar', lat: 47.8864, lon: 106.9057},
       {dest: 'Berlin', lat: 52.5200, lon: 13.4050},
       {dest: 'Amsterdam', lat: 52.3702, lon: 4.8952},
-      {dest: 'New York', lat: 40.7128, lon: -74.0059}
+      {dest: 'New York', lat: 40.7128, lon: -74.0059},
+      {dest: 'AdelaideHome', lat: -34.9288, lon: 138.6007}
     ]
 
     this.loadedTextures = 0;
@@ -44,11 +47,13 @@ class Earth extends React.Component {
 
     // construct the position vector here, because if we use 'new' within render,
     // React will think that things have changed when they have not.
-    this.cameraPosition = new THREE.Vector3(0, 0, 2);
-    this.lightPosition = new THREE.Vector3(9, 9, 9);
+    this.cameraPosition = new THREE.Vector3(0, 0, 2).multiplyScalar(this.cameraDistance);
+    this.lightPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.lightDistance);
 
     this._onAnimate = () => {
       // we will get this callback every frame
+
+      // this.lightPosition = new THREE.Vector3(1, 1, 1).multiplyScalar(this.lightDistance);
 
       // pretend cubeRotation is immutable.
       // this helps with updates and pure rendering.
@@ -58,13 +63,14 @@ class Earth extends React.Component {
         positionToSet = 0;
       }
       this.setState({
-        cubeRotation: new THREE.Euler(0, this.state.cubeRotation.y + 0.0, 0),
+        // cubeRotation: new THREE.Euler(0, this.state.cubeRotation.y + 0.01, 0),
         primaryMarkerPosition: positionToSet
       });
+
     };
     this.addMarker = (locationObject) => {
       var colory = new THREE.Color( 'skyblue' );
-      var markerPosition = this.convertLatLonToVec3(locationObject['lat'], locationObject['lon']).multiplyScalar(this.earthRadius).applyEuler(this.state.cubeRotation)
+      var markerPosition = this.convertLatLonToVec3(locationObject['lat'], locationObject['lon']).multiplyScalar(this.earthRadius)
       var marker = (
         <mesh
           key={locationObject['dest']}
@@ -84,36 +90,49 @@ class Earth extends React.Component {
       var markers = this.destinations.map(this.addMarker);
       return markers;
     }
-    this.generatePrimaryMarker = () => {
+    this.generateComet = () => {
+
       let markerSubset = []
       if (this.state.primaryMarkerPosition < 20) {
         markerSubset = this.travelPath.slice(0,this.state.primaryMarkerPosition)
       } else {
         markerSubset = this.travelPath.slice(this.state.primaryMarkerPosition-20,this.state.primaryMarkerPosition)
       }
-      let markerSpheres = markerSubset.map((marker, index) => {
-        return(
-          <mesh
-            key={index}
-            position={marker}>
-            <sphereGeometry
-              radius={index/1000}
-              widthSegments={16}
-              heightSegments={16}/>
-            <meshBasicMaterial
-              color={new THREE.Color( 'red' )}/>
-          </mesh>
-        )
-      })
-      return markerSpheres
+      if (typeof this.travelPath[this.state.primaryMarkerPosition] !== 'undefined'){
+        let markerSpheres = markerSubset.map((marker, index) => {
+          return(
+            <mesh
+              key={index}
+              position={marker}>
+              <sphereGeometry
+                radius={index/1000}
+                widthSegments={16}
+                heightSegments={16}/>
+              <meshBasicMaterial
+                color={new THREE.Color("red")}/>
+            </mesh>
+          )
+        })
+
+        let oldCam = this.cameraPosition.clone()
+        let currentPos = this.travelPath[this.state.primaryMarkerPosition].clone()
+        this.cameraPosition = currentPos.normalize().multiplyScalar(this.cameraDistance)
+        let newCam = this.cameraPosition.clone()
+        let quaternion = new THREE.Quaternion().setFromUnitVectors(oldCam.normalize(), newCam.normalize());
+        let matrix = new THREE.Matrix4().makeRotationFromQuaternion( quaternion );
+        this.lightPosition.applyMatrix4( matrix );
+
+
+        return markerSpheres
+      }
     }
 
     this.createSphereArcs = () => {
       let i = 0;
       let travelPath = [];
       while (i < this.destinations.length-1) {
-        let fromVector = this.convertLatLonToVec3(this.destinations[i]['lat'], this.destinations[i]['lon']).multiplyScalar(this.earthRadius).applyEuler(this.state.cubeRotation)
-        let toVector = this.convertLatLonToVec3(this.destinations[i+1]['lat'], this.destinations[i+1]['lon']).multiplyScalar(this.earthRadius).applyEuler(this.state.cubeRotation)
+        let fromVector = this.convertLatLonToVec3(this.destinations[i]['lat'], this.destinations[i]['lon']).multiplyScalar(this.earthRadius)
+        let toVector = this.convertLatLonToVec3(this.destinations[i+1]['lat'], this.destinations[i+1]['lon']).multiplyScalar(this.earthRadius)
         let angle = fromVector.angleTo(toVector);
         let dist = fromVector.distanceTo(toVector);
         let controlFromVector = fromVector.clone();
@@ -194,6 +213,8 @@ class Earth extends React.Component {
         onAnimate={this._onAnimate}>
         <scene>
           <perspectiveCamera
+            key={"rnd"+Math.random()}
+            lookAt={new THREE.Vector3(0, 0, 0)}
             name="camera"
             fov={75}
             aspect={this.width / this.height}
@@ -201,6 +222,7 @@ class Earth extends React.Component {
             far={50}
             position={this.cameraPosition}/>
           <pointLight
+            key={"rnd"+Math.random()}
             color={0xffffff}
             intensity={1}
             position={this.lightPosition}/>
@@ -214,7 +236,7 @@ class Earth extends React.Component {
               {this.texture4}
             </meshBasicMaterial>
           </mesh>
-          <mesh rotation={this.state.cubeRotation}>
+          <mesh>
             <sphereGeometry
               radius={this.earthRadius}
               widthSegments={32}
@@ -227,9 +249,10 @@ class Earth extends React.Component {
               {this.texture3}
             </meshPhongMaterial>
           </mesh>
+          {this.generateComet()}
           {this.plotPoints()}
           {this.drawCurves()}
-          {this.generatePrimaryMarker()}
+
         </scene>
       </React3>
     );
