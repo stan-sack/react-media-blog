@@ -208,8 +208,8 @@ class Earth extends React.Component {
     return(
       <React3
         mainCamera="camera" // this points to the perspectiveCamera which has the name set to "camera" below
-        width={this.width}
-        height={this.height}
+        width={this.props.width}
+        height={this.props.height}
         onAnimate={this._onAnimate}>
         <scene>
           <perspectiveCamera
@@ -217,7 +217,7 @@ class Earth extends React.Component {
             lookAt={new THREE.Vector3(0, 0, 0)}
             name="camera"
             fov={75}
-            aspect={this.width / this.height}
+            aspect={this.props.width / this.props.height}
             near={0.1}
             far={50}
             position={this.cameraPosition}/>
