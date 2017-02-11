@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import FontAwesome from 'react-fontawesome';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './EarthOverlay.css';
 
@@ -10,28 +10,51 @@ class EarthOverlay extends React.Component {
     this.state = {};
   }
 
-  componentDidMount(){
-    this.updateCanvas()
+  componentDidMount() {
+    // this.updateCanvas()
   }
-  componentDidUpdate(){
-    this.updateCanvas()
+  componentDidUpdate() {
+    // this.updateCanvas()
   }
-  updateCanvas() {
-        const ctx = this.refs.canvas.getContext('2d');
-        ctx.fillStyle="#FF0000";
-        ctx.fillRect(10,10, 100, 100);
+  getArrows() {
+    if (this.props.width / this.props.height > 2) {
+      return (
+        <div className={s.ui}>
+          <div className={s.arrowWrapper}>
+            <FontAwesome
+              className={s.arrow}
+              name="arrow-left"
+              size="5x"
+            />
+          </div>
+          <div className={s.midspace} />
+          <div className={s.arrowWrapper}>
+            <FontAwesome
+              className={s.arrow}
+              name="arrow-right"
+              size="5x"
+            />
+          </div>
+        </div>
+      );
     }
-
-  render() {
-    return(
-      <canvas ref="canvas"
-        width={this.props.width}
-        height={this.props.height}
-        className={s.ui}/>
+    return (
+      <div className={s.ui}>
+        <div className={s.doubleArrowWrapper}>
+          <FontAwesome
+            className={s.doubleArrow}
+            name="arrows-h"
+            size="5x"
+          />
+        </div>
+      </div>
     );
   }
-}
 
+  render() {
+    return (this.getArrows());
+  }
+}
 
 
 export default withStyles(s)(EarthOverlay);
