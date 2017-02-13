@@ -1,60 +1,61 @@
-import React from 'react';
-import FontAwesome from 'react-fontawesome';
-import withStyles from 'isomorphic-style-loader/lib/withStyles';
-import s from './EarthOverlay.css';
+import React, { PropTypes } from 'react'
+import FontAwesome from 'react-fontawesome'
+import './EarthOverlay.scss'
 
 class EarthOverlay extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-
-    this.state = {};
+  static propTypes = {
+    height: PropTypes.number,
+    width: PropTypes.number
   }
 
-  componentDidMount() {
+  constructor (props, context) {
+    super(props, context)
+    this.state = {}
+  }
+
+  componentDidMount () {
     // this.updateCanvas()
   }
-  componentDidUpdate() {
+  componentDidUpdate () {
     // this.updateCanvas()
   }
-  getArrows() {
+  getArrows () {
     if (this.props.width / this.props.height > 2) {
       return (
-        <div className={s.ui}>
-          <div className={s.arrowWrapper}>
+        <div className={'ui'}>
+          <div className={'arrowWrapper'}>
             <FontAwesome
-              className={s.arrow}
-              name="arrow-left"
-              size="5x"
+              className={'arrow'}
+              name='arrow-left'
+              size='5x'
             />
           </div>
-          <div className={s.midspace} />
-          <div className={s.arrowWrapper}>
+          <div className={'midspace'} />
+          <div className={'arrowWrapper'}>
             <FontAwesome
-              className={s.arrow}
-              name="arrow-right"
-              size="5x"
+              className={'arrow'}
+              name='arrow-right'
+              size='5x'
             />
           </div>
         </div>
-      );
+      )
     }
     return (
-      <div className={s.ui}>
-        <div className={s.doubleArrowWrapper}>
+      <div className={'ui'}>
+        <div className={'doubleArrowWrapper'}>
           <FontAwesome
-            className={s.doubleArrow}
-            name="arrows-h"
-            size="5x"
+            className={'doubleArrow'}
+            name='arrows-h'
+            size='5x'
           />
         </div>
       </div>
-    );
+    )
   }
 
-  render() {
-    return (this.getArrows());
+  render () {
+    return (this.getArrows())
   }
 }
-
-
-export default withStyles(s)(EarthOverlay);
+export default (EarthOverlay)
