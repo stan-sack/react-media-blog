@@ -1,8 +1,6 @@
 import React, { PropTypes } from 'react'
 import Earth from 'components/Earth'
-import { store } from '../../../main'
 import { ANIMATION_FPS } from '../../../constants/ThreeGeomerty'
-import { updateWindowSize, calculateNextFrame } from '../modules/earthPage'
 
 // import EarthOverlay from 'components/EarthOverlay'
 
@@ -18,6 +16,10 @@ class EarthPage extends React.Component {
     this.props.updateWindowSize(window.innerWidth, window.innerHeight)
     this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
     this.refs.earthContainer.addEventListener('DOMMouseScroll', this.handleMouseScroll, false)
+    this.refs.earthContainer.addEventListener('dragstart', this.handleMouseDrag, false)
+    this.refs.earthContainer.addEventListener('drag', this.handleMouseDrag, false)
+    this.refs.earthContainer.addEventListener('dragend', this.handleMouseDrag, false)
+    this.refs.earthContainer.addEventListener('onmousemove', this.handleMouseMove, false)
   }
   componentWillUnmount () {
     window.removeEventListener('resize', this.updateDimensions)
@@ -31,11 +33,24 @@ class EarthPage extends React.Component {
   }
   handleMouseScroll = (event) => {
     event.preventDefault()
-    console.log('scrolling')
+    this.props.updateCameraDistance(event.deltaY, this.props.cameraDistance)
+  }
+  handleMouseDrag = (event) => {
+    if (event.type === 'dragstart') {
+      this.props.updateControlState('drag')
+    } else if (event.type === 'drag') {
+      // handle geometry stuff
+    } else if (event.type === 'dragend') {
+      this.props.updateControlState('slowRotate')
+    }
+  }
+  handleMouseMove = (event) => {
+    event.preventDefault()
+    // console.log(event)
   }
   render () {
     return (
-      <div ref='earthContainer'>
+      <div ref='earthContainer' draggable='true'>
         <Earth
           width={this.props.width}
           height={this.props.height}
@@ -60,10 +75,14 @@ EarthPage.propTypes = {
   cameraPosition: PropTypes.object,
   lightPosition: PropTypes.object,
   calculateNextFrame: PropTypes.func,
+  cameraDistance: PropTypes.number,
+  updateCameraDistance: PropTypes.func,
   locations: PropTypes.array,
   setManualRenderTrigger: PropTypes.func,
   updateWindowSize: PropTypes.func,
-  renderTrigger: PropTypes.func
+  renderTrigger: PropTypes.func,
+  controlState: PropTypes.string,
+  updateControlState: PropTypes.func
 }
 
 export default EarthPage

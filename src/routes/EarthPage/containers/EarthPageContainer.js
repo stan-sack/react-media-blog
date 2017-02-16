@@ -1,6 +1,7 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { calculateNextFrame, setManualRenderTrigger, updateWindowSize } from '../modules/earthPage'
+import { calculateNextFrame, setManualRenderTrigger, updateWindowSize,
+  updateCameraDistance, updateControlState } from '../modules/earthPage'
 
 /*  This is a container component. Notice it does not contain any JSX,
 nor does it import React. This component is **only** responsible for
@@ -16,11 +17,14 @@ const mapDispatchToProps = (dispatch) => (
   bindActionCreators({
     calculateNextFrame,
     setManualRenderTrigger,
-    updateWindowSize
+    updateWindowSize,
+    updateCameraDistance,
+    updateControlState
   }, dispatch)
 )
 
 const mapStateToProps = (state) => ({
+  cameraDistance: state.earthPage.cameraDistance,
   width : state.earthPage.width,
   height : state.earthPage.height,
   primaryMarkerPosition : state.earthPage.primaryMarkerPosition,
@@ -28,7 +32,8 @@ const mapStateToProps = (state) => ({
   comet : state.earthPage.comet,
   locations: state.earthPage.locations,
   cameraPosition: state.earthPage.cameraPosition,
-  lightPosition: state.earthPage.lightPosition
+  lightPosition: state.earthPage.lightPosition,
+  controlState: state.earthPage.controlState
 })
 
 /*  Note: mapStateToProps is where you should use `reselect` to create selectors, ie:

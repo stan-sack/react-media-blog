@@ -1,12 +1,14 @@
 import * as THREE from 'three'
 import { getTravelPath } from '../../../helpers/geometryHelpers'
-import { CAMERA_DISTANCE } from '../../../constants/ThreeGeomerty'
+import { EARTH_RADIUS } from '../../../constants/ThreeGeomerty'
 // ------------------------------------
 // Constants
 // ------------------------------------
 export const UPDATE_ANIMATION = 'UPDATE_ANIMATION'
 export const UPDATE_WINDOW_SIZE = 'UPDATE_WINDOW_SIZE'
 export const SET_MANUAL_RENDER_TRIGGER = 'SET_MANUAL_RENDER_TRIGGER'
+export const UPDATE_CAMERA_DISTACE = 'UPDATE_CAMERA_DISTACE'
+export const UPDATE_CONTROL_STATE = 'UPDATE_CONTROL_STATE'
 // export const COUNTER_DOUBLE_ASYNC = 'COUNTER_DOUBLE_ASYNC'
 
 // ------------------------------------
@@ -24,22 +26,33 @@ returns a function for lazy evaluation. It is incredibly useful for
 creating async actions, especially when combined with redux-thunk! */
 
 export const calculateNextFrame = (props) => {
+  let nextPrimaryMarkerPosition
+  let newLightPosition
+  let newCameraPosition
   // we will get this callback every frame
-  let oldCam = props.cameraPosition.clone()
-  let currentPos = props.travelPath[props.primaryMarkerPosition].clone()
-  let newCameraPosition = currentPos.normalize().multiplyScalar(CAMERA_DISTANCE)
-  let newCam = newCameraPosition.clone()
-  let quaternion = new THREE.Quaternion().setFromUnitVectors(oldCam.normalize(), newCam.normalize())
-  let matrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion)
-  let newLightPosition = props.lightPosition.clone()
-  newLightPosition.applyMatrix4(matrix)
+  if (props.controlState === 'auto') {
+    let oldCam = props.cameraPosition.clone()
+    let currentPos = props.travelPath[props.primaryMarkerPosition].clone()
+    newCameraPosition = currentPos.normalize().multiplyScalar(props.cameraDistance)
+    let newCam = newCameraPosition.clone()
+    let quaternion = new THREE.Quaternion().setFromUnitVectors(oldCam.normalize(), newCam.normalize())
+    let matrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion)
+    newLightPosition = props.lightPosition.clone()
+    newLightPosition.applyMatrix4(matrix)
 
-  let nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
-  if (props.primaryMarkerPosition >= props.travelPath.length - 1) {
-    nextPrimaryMarkerPosition = 0
-  } else if (typeof props.primaryMarkerPosition === 'undefined') {
-    nextPrimaryMarkerPosition = 0
+    nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
+    if (props.primaryMarkerPosition >= props.travelPath.length - 1) {
+      nextPrimaryMarkerPosition = 0
+    } else if (typeof props.primaryMarkerPosition === 'undefined') {
+      nextPrimaryMarkerPosition = 0
+    }
+  } else {
+    // drag code goes Here
+    nextPrimaryMarkerPosition = props.primaryMarkerPosition
+    newLightPosition = props.cameraPosition.clone()
+    newCameraPosition = props.cameraPosition.clone()
   }
+
   return {
     type    : UPDATE_ANIMATION,
     payload : {
@@ -50,12 +63,26 @@ export const calculateNextFrame = (props) => {
   }
 }
 
+export const updateCameraDistance = (deltaY, cameraDistance) => {
+  let newCameraDistance
+  if (deltaY > 0) {
+    newCameraDistance = cameraDistance + 0.1
+  } else {
+    newCameraDistance = Math.max(cameraDistance - 0.1, EARTH_RADIUS + 0.1)
+  }
+
+  return {
+    type    : UPDATE_CAMERA_DISTACE,
+    payload : newCameraDistance
+  }
+}
+
 export const updateWindowSize = (width, height) => {
   return {
     type    : UPDATE_WINDOW_SIZE,
     payload : {
       width: width,
-      height: height
+      height: Math.floor(height * 0.9)
     }
   }
 }
@@ -67,10 +94,19 @@ export const setManualRenderTrigger = (renderTrigger) => {
   }
 }
 
+export const updateControlState = (newState) => {
+  return {
+    type    : UPDATE_CONTROL_STATE,
+    payload : newState
+  }
+}
+
 export const actions = {
   calculateNextFrame,
   updateWindowSize,
-  setManualRenderTrigger
+  setManualRenderTrigger,
+  updateCameraDistance,
+  updateControlState
 }
 
 // ------------------------------------
@@ -87,12 +123,22 @@ const ACTION_HANDLERS = {
   [UPDATE_WINDOW_SIZE]: (state, action) => {
     return Object.assign({}, state, {
       width: action.payload.width,
-      height: Math.floor(action.payload.height * 0.95)
+      height: action.payload.height
     })
   },
   [SET_MANUAL_RENDER_TRIGGER]: (state, action) => {
     return Object.assign({}, state, {
       renderTrigger: action.payload
+    })
+  },
+  [UPDATE_CAMERA_DISTACE]: (state, action) => {
+    return Object.assign({}, state, {
+      cameraDistance: action.payload
+    })
+  },
+  [UPDATE_CONTROL_STATE]: (state, action) => {
+    return Object.assign({}, state, {
+      controlState: action.payload
     })
   }
 }
@@ -118,8 +164,10 @@ const initialState = {
   locations: tempLocations,
   travelPath: getTravelPath(tempLocations),
   comet: [],
+  cameraDistance: 2,
   cameraPosition: new THREE.Vector3(0, 0, 2),
-  lightPosition: new THREE.Vector3(.5, .5, 1)
+  lightPosition: new THREE.Vector3(0.5, 0.5, 1),
+  controlState: 'auto'
 }
 export default function earthPageReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]
