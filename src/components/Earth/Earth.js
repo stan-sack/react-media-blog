@@ -22,6 +22,7 @@ export const Earth = (props) => (
         near={0.1}
         far={50}
         position={props.cameraPosition} />
+      <ambientLight intensity={0.2} />
       <pointLight
         key={'rnd' + Math.random()}
         color={0xffffff}

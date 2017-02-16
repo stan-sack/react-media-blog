@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { calculateNextFrame, setManualRenderTrigger } from '../modules/earthPage'
+import { calculateNextFrame, setManualRenderTrigger, updateWindowSize } from '../modules/earthPage'
 
 /*  This is a container component. Notice it does not contain any JSX,
 nor does it import React. This component is **only** responsible for
@@ -15,7 +15,8 @@ implementing our wrapper around increment; the component doesn't care   */
 const mapDispatchToProps = (dispatch) => (
   bindActionCreators({
     calculateNextFrame,
-    setManualRenderTrigger
+    setManualRenderTrigger,
+    updateWindowSize
   }, dispatch)
 )
 

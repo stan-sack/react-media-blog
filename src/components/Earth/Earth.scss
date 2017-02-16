@@ -13,9 +13,10 @@
 }
 
 .container {
-  margin: 0 auto;
+  margin: 0;
   // padding: 20px 8px;
   max-width: var(--max-content-width);
+  max-height: var(--max-content-height);
   text-align: center;
   font-size: 1.5em; /* ~24px */
 }

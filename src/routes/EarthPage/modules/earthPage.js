@@ -87,7 +87,7 @@ const ACTION_HANDLERS = {
   [UPDATE_WINDOW_SIZE]: (state, action) => {
     return Object.assign({}, state, {
       width: action.payload.width,
-      height: action.payload.height
+      height: Math.floor(action.payload.height * 0.95)
     })
   },
   [SET_MANUAL_RENDER_TRIGGER]: (state, action) => {
@@ -119,7 +119,7 @@ const initialState = {
   travelPath: getTravelPath(tempLocations),
   comet: [],
   cameraPosition: new THREE.Vector3(0, 0, 2),
-  lightPosition: new THREE.Vector3(1, 1, 1)
+  lightPosition: new THREE.Vector3(.5, .5, 1)
 }
 export default function earthPageReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]

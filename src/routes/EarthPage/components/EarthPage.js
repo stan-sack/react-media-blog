@@ -10,27 +10,32 @@ class EarthPage extends React.Component {
   constructor (props, context) {
     super(props, context)
     this.updateDimensions = () => {
-      store.dispatch(updateWindowSize(document.body.clientWidth, document.body.clientHeight))
+      this.props.updateWindowSize(window.innerWidth, window.innerHeight)
     }
   }
   componentDidMount () {
     window.addEventListener('resize', this.updateDimensions)
-    store.dispatch(updateWindowSize(document.body.clientWidth, document.body.clientHeight))
+    this.props.updateWindowSize(window.innerWidth, window.innerHeight)
+    this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
+    this.refs.earthContainer.addEventListener('DOMMouseScroll', this.handleMouseScroll, false)
   }
   componentWillUnmount () {
     window.removeEventListener('resize', this.updateDimensions)
     clearInterval(this.ticker)
   }
   intervalTrigger = (renderTrigger) => {
-    this.ticker = setInterval(function () {
-      store.dispatch(calculateNextFrame(this.props))
+    this.ticker = setInterval(() => {
+      this.props.calculateNextFrame(this.props)
       renderTrigger()
-    }.bind(this), ANIMATION_FPS)
+    }, ANIMATION_FPS)
   }
-
+  handleMouseScroll = (event) => {
+    event.preventDefault()
+    console.log('scrolling')
+  }
   render () {
     return (
-      <div style={{ margin: '0 auto' }} >
+      <div ref='earthContainer'>
         <Earth
           width={this.props.width}
           height={this.props.height}
@@ -57,6 +62,7 @@ EarthPage.propTypes = {
   calculateNextFrame: PropTypes.func,
   locations: PropTypes.array,
   setManualRenderTrigger: PropTypes.func,
+  updateWindowSize: PropTypes.func,
   renderTrigger: PropTypes.func
 }
 
