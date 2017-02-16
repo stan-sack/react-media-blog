@@ -33,7 +33,8 @@ const mapStateToProps = (state) => ({
   locations: state.earthPage.locations,
   cameraPosition: state.earthPage.cameraPosition,
   lightPosition: state.earthPage.lightPosition,
-  controlState: state.earthPage.controlState
+  controlState: state.earthPage.controlState,
+  earthDirection: state.earthPage.earthDirection
 })
 
 /*  Note: mapStateToProps is where you should use `reselect` to create selectors, ie:

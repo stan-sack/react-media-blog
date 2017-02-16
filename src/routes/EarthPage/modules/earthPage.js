@@ -27,18 +27,27 @@ creating async actions, especially when combined with redux-thunk! */
 
 export const calculateNextFrame = (props) => {
   let nextPrimaryMarkerPosition
-  let newLightPosition
-  let newCameraPosition
+  let newEarthDir
+  let newCameraPosition = props.cameraPosition.normalize().multiplyScalar(props.cameraDistance)
+
   // we will get this callback every frame
   if (props.controlState === 'auto') {
-    let oldCam = props.cameraPosition.clone()
-    let currentPos = props.travelPath[props.primaryMarkerPosition].clone()
-    newCameraPosition = currentPos.normalize().multiplyScalar(props.cameraDistance)
-    let newCam = newCameraPosition.clone()
-    let quaternion = new THREE.Quaternion().setFromUnitVectors(oldCam.normalize(), newCam.normalize())
-    let matrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion)
-    newLightPosition = props.lightPosition.clone()
-    newLightPosition.applyMatrix4(matrix)
+    let oldEarthDir = props.earthDirection.clone()
+    let oldPos = props.travelPath[props.primaryMarkerPosition].clone()
+    console.log(oldPos)
+    let angle = oldEarthDir.angleTo(oldPos)
+    oldPos.cross(oldEarthDir)
+    oldEarthDir.applyAxisAngle(oldPos, -angle)
+    newEarthDir = oldEarthDir.normalize().applyAxisAngle(oldPos, -angle).clone()
+
+    // KEEP THIS CODE ITS FOR ROTATING THE CAMERA AND LIGHT!!!
+    // let oldCam = props.cameraPosition.clone()
+    // let currentPos = props.travelPath[props.primaryMarkerPosition].clone()
+    // let newCam = newCameraPosition.clone()
+    // let quaternion = new THREE.Quaternion().setFromUnitVectors(oldCam.normalize(), newCam.normalize())
+    // let matrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion)
+    // newLightPosition = props.lightPosition.clone()
+    // newLightPosition.applyMatrix4(matrix)
 
     nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
     if (props.primaryMarkerPosition >= props.travelPath.length - 1) {
@@ -49,15 +58,14 @@ export const calculateNextFrame = (props) => {
   } else {
     // drag code goes Here
     nextPrimaryMarkerPosition = props.primaryMarkerPosition
-    newLightPosition = props.cameraPosition.clone()
-    newCameraPosition = props.cameraPosition.clone()
+    newEarthDir = props.earthDirection.clone()
   }
 
   return {
     type    : UPDATE_ANIMATION,
     payload : {
       primaryMarkerPosition: nextPrimaryMarkerPosition,
-      lightPosition: newLightPosition,
+      earthDirection: newEarthDir,
       cameraPosition: newCameraPosition
     }
   }
@@ -116,8 +124,9 @@ const ACTION_HANDLERS = {
   [UPDATE_ANIMATION]: (state, action) => {
     return Object.assign({}, state, {
       primaryMarkerPosition: action.payload.primaryMarkerPosition,
-      cameraPosition: action.payload.cameraPosition,
-      lightPosition: action.payload.lightPosition
+      earthDirection: action.payload.earthDirection,
+      cameraPosition: action.payload.cameraPosition
+      // lightPosition: action.payload.lightPosition
     })
   },
   [UPDATE_WINDOW_SIZE]: (state, action) => {
@@ -163,7 +172,7 @@ const initialState = {
   primaryMarkerPosition: 0,
   locations: tempLocations,
   travelPath: getTravelPath(tempLocations),
-  comet: [],
+  earthDirection: new THREE.Vector3(0, 0, -1),
   cameraDistance: 2,
   cameraPosition: new THREE.Vector3(0, 0, 2),
   lightPosition: new THREE.Vector3(0.5, 0.5, 1),

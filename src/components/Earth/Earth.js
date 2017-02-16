@@ -24,36 +24,37 @@ export const Earth = (props) => (
         position={props.cameraPosition} />
       <ambientLight intensity={0.2} />
       <pointLight
-        key={'rnd' + Math.random()}
         color={0xffffff}
         intensity={1}
         position={props.lightPosition} />
-      <mesh>
-        <sphereGeometry
-          radius={EARTH_RADIUS * 3}
-          widthSegments={32}
-          heightSegments={32} />
-        <meshBasicMaterial
-          side={THREE.BackSide}>
-          <texture url={'galaxy_starfield.png'} slot={'map'} />
-        </meshBasicMaterial>
-      </mesh>
-      <mesh>
-        <sphereGeometry
-          radius={EARTH_RADIUS}
-          widthSegments={32}
-          heightSegments={32} />
-        <meshPhongMaterial
-          bumpScale={0.1}
-          specular={'grey'}>
-          <texture url={'earthmap1k.jpg'} />
-          <texture url={'earthbump1k.jpg'} slot={'bumpMap'} />
-          <texture url={'earthspec1k.jpg'} slot={'specularMap'} />
-        </meshPhongMaterial>
-      </mesh>
-      {plotPoints(props.locations)}
-      {createSphereArcs(props.locations).map(drawCurves)}
-      {generateComet(props)}
+      <group lookAt={props.earthDirection}>
+        <mesh>
+          <sphereGeometry
+            radius={EARTH_RADIUS * 3}
+            widthSegments={32}
+            heightSegments={32} />
+          <meshBasicMaterial
+            side={THREE.BackSide}>
+            <texture url={'galaxy_starfield.png'} slot={'map'} />
+          </meshBasicMaterial>
+        </mesh>
+        <mesh>
+          <sphereGeometry
+            radius={EARTH_RADIUS}
+            widthSegments={32}
+            heightSegments={32} />
+          <meshPhongMaterial
+            bumpScale={0.1}
+            specular={'grey'}>
+            <texture url={'earthmap1k.jpg'} />
+            <texture url={'earthbump1k.jpg'} slot={'bumpMap'} />
+            <texture url={'earthspec1k.jpg'} slot={'specularMap'} />
+          </meshPhongMaterial>
+        </mesh>
+        {generateComet(props)}
+        {plotPoints(props.locations)}
+        {createSphereArcs(props.locations).map(drawCurves)}
+      </group>
     </scene>
   </React3>
 )
@@ -69,7 +70,8 @@ Earth.propTypes = {
   locations: PropTypes.array,
   setManualRenderTrigger: PropTypes.func,
   updateCameraPosition: PropTypes.func,
-  updateLightPosition: PropTypes.func
+  updateLightPosition: PropTypes.func,
+  earthDirection: PropTypes.object
 }
 
 export default Earth

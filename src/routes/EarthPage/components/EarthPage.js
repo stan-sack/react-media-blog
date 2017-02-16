@@ -60,6 +60,7 @@ class EarthPage extends React.Component {
           cameraPosition={this.props.cameraPosition}
           lightPosition={this.props.lightPosition}
           locations={this.props.locations}
+          earthDirection={this.props.earthDirection}
           setManualRenderTrigger={this.intervalTrigger} />
       </div>
     )
@@ -82,7 +83,8 @@ EarthPage.propTypes = {
   updateWindowSize: PropTypes.func,
   renderTrigger: PropTypes.func,
   controlState: PropTypes.string,
-  updateControlState: PropTypes.func
+  updateControlState: PropTypes.func,
+  earthDirection: PropTypes.object
 }
 
 export default EarthPage
