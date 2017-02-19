@@ -118,3 +118,36 @@ export const generateComet = (props) => {
     return markerSpheres
   }
 }
+
+export const toEuler = (x, y, z, angle) => {
+  let s = Math.sin(angle)
+  let c = Math.cos(angle)
+  let t = 1 - c
+  //  if axis is not already normalised then uncomment this
+  // double magnitude = Math.sqrt(x*x + y*y + z*z);
+  // if (magnitude==0) throw error;
+  // x /= magnitude;
+  // y /= magnitude;
+  // z /= magnitude;
+  let heading
+  let attitude
+  let bank
+  if ((x * y * t + z * s) > 0.998) { // north pole singularity detected
+    heading = 2 * Math.atan2(x * Math.sin(angle / 2), Math.cos(angle / 2))
+    attitude = Math.PI / 2
+    bank = 0
+  } else if ((x * y * t + z * s) < -0.998) { // south pole singularity detected
+    heading = -2 * Math.atan2(x * Math.sin(angle / 2), Math.cos(angle / 2))
+    attitude = -Math.PI / 2
+    bank = 0
+  } else {
+    heading = Math.atan2(y * s - x * z * t, 1 - (y * y + z * z) * t)
+    attitude = Math.asin(x * y * t + z * s)
+    bank = Math.atan2(x * s - y * z * t, 1 - (x * x + z * z) * t)
+  }
+  return {
+    heading: heading,
+    attitude: attitude,
+    bank: bank
+  }
+}

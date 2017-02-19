@@ -27,7 +27,7 @@ export const Earth = (props) => (
         color={0xffffff}
         intensity={1}
         position={props.lightPosition} />
-      <group lookAt={props.earthDirection}>
+      <group rotation={props.earthRotation}>
         <mesh>
           <sphereGeometry
             radius={EARTH_RADIUS * 3}
@@ -71,7 +71,7 @@ Earth.propTypes = {
   setManualRenderTrigger: PropTypes.func,
   updateCameraPosition: PropTypes.func,
   updateLightPosition: PropTypes.func,
-  earthDirection: PropTypes.object
+  earthRotation: PropTypes.object
 }
 
 export default Earth

@@ -9,11 +9,13 @@ class EarthPage extends React.Component {
     super(props, context)
     this.updateDimensions = () => {
       this.props.updateWindowSize(window.innerWidth, window.innerHeight)
+      this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     }
   }
   componentDidMount () {
     window.addEventListener('resize', this.updateDimensions)
     this.props.updateWindowSize(window.innerWidth, window.innerHeight)
+    this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
     this.refs.earthContainer.addEventListener('DOMMouseScroll', this.handleMouseScroll, false)
     this.refs.earthContainer.addEventListener('dragstart', this.handleMouseDrag, false)
@@ -38,15 +40,11 @@ class EarthPage extends React.Component {
   handleMouseDrag = (event) => {
     if (event.type === 'dragstart') {
       this.props.updateControlState('drag')
-    } else if (event.type === 'drag') {
-      // handle geometry stuff
+    } else if (event.type === 'drag' && (event.screenX && event.screenY !== 0)) {
+      this.props.updateVelocity(event.screenX, this.props.height - event.screenY)
     } else if (event.type === 'dragend') {
       this.props.updateControlState('slowRotate')
     }
-  }
-  handleMouseMove = (event) => {
-    event.preventDefault()
-    // console.log(event)
   }
   render () {
     return (
@@ -60,7 +58,7 @@ class EarthPage extends React.Component {
           cameraPosition={this.props.cameraPosition}
           lightPosition={this.props.lightPosition}
           locations={this.props.locations}
-          earthDirection={this.props.earthDirection}
+          earthRotation={this.props.earthRotation}
           setManualRenderTrigger={this.intervalTrigger} />
       </div>
     )
@@ -84,7 +82,10 @@ EarthPage.propTypes = {
   renderTrigger: PropTypes.func,
   controlState: PropTypes.string,
   updateControlState: PropTypes.func,
-  earthDirection: PropTypes.object
+  earthRotation: PropTypes.object,
+  initialiseVelocityCentre: PropTypes.func,
+  updateVelocity: PropTypes.func,
+  twoDimensionalVelocity: PropTypes.array
 }
 
 export default EarthPage

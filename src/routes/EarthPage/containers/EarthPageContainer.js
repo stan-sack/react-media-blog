@@ -1,7 +1,8 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { calculateNextFrame, setManualRenderTrigger, updateWindowSize,
-  updateCameraDistance, updateControlState } from '../modules/earthPage'
+  updateCameraDistance, updateControlState, initialiseVelocityCentre,
+  updateVelocity } from '../modules/earthPage'
 
 /*  This is a container component. Notice it does not contain any JSX,
 nor does it import React. This component is **only** responsible for
@@ -19,7 +20,9 @@ const mapDispatchToProps = (dispatch) => (
     setManualRenderTrigger,
     updateWindowSize,
     updateCameraDistance,
-    updateControlState
+    updateControlState,
+    initialiseVelocityCentre,
+    updateVelocity
   }, dispatch)
 )
 
@@ -34,7 +37,8 @@ const mapStateToProps = (state) => ({
   cameraPosition: state.earthPage.cameraPosition,
   lightPosition: state.earthPage.lightPosition,
   controlState: state.earthPage.controlState,
-  earthDirection: state.earthPage.earthDirection
+  earthRotation: state.earthPage.earthRotation,
+  twoDimensionalVelocity: state.earthPage.twoDimensionalVelocity
 })
 
 /*  Note: mapStateToProps is where you should use `reselect` to create selectors, ie:
