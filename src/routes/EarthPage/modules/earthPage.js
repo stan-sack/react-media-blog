@@ -134,12 +134,22 @@ export const updateVelocity = (cursorX, cursorY) => {
   }
 }
 
-export const updateCameraDistance = (deltaY, cameraDistance) => {
+export const updateCameraDistance = (data, cameraDistance, isPinch) => {
   let newCameraDistance
-  if (deltaY > 0) {
-    newCameraDistance = cameraDistance + 0.1
+  if (!isPinch) {
+    if (data > 0) {
+      newCameraDistance = cameraDistance + 0.1
+    } else {
+      newCameraDistance = Math.max(cameraDistance - 0.1, EARTH_RADIUS + 0.1)
+    }
   } else {
-    newCameraDistance = Math.max(cameraDistance - 0.1, EARTH_RADIUS + 0.1)
+    // TODO: implement some kind of smoothing here
+    if (data.additionalEvent === 'pinchin') {
+      newCameraDistance = cameraDistance + data.velocity
+    } else {
+      // TODO: data.velocity may already be negative when pinchout
+      newCameraDistance = Math.max(cameraDistance - data.velocity, EARTH_RADIUS + 0.1)
+    }
   }
 
   return {

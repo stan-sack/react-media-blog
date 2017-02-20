@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react'
 import Earth from 'components/Earth'
 import { ANIMATION_FPS } from '../../../constants/ThreeGeomerty'
-
+import Hammer from 'react-hammerjs'
 // import EarthOverlay from 'components/EarthOverlay'
 
 class EarthPage extends React.Component {
@@ -35,7 +35,7 @@ class EarthPage extends React.Component {
   }
   handleMouseScroll = (event) => {
     event.preventDefault()
-    this.props.updateCameraDistance(event.deltaY, this.props.cameraDistance)
+    this.props.updateCameraDistance(event.deltaY, this.props.cameraDistance, false)
   }
   handleMouseDrag = (event) => {
     if (event.type === 'dragstart') {
@@ -46,21 +46,47 @@ class EarthPage extends React.Component {
       this.props.updateControlState('rolling')
     }
   }
+  handleSwipe = (event) => {
+    console.log(event)
+  }
+  handlePinch = (event) => {
+    if (event.isFirst) {
+      this.props.updateControlState('rolling')
+    } else if (event.isFinal) {
+      this.props.updateControlState('slowRotate')
+    } else {
+      this.props.updateCameraDistance(event, this.props.cameraDistance, true)
+    }
+  }
+  handleRotate = (event) => {
+    console.log('rotate')
+    console.log(event)
+    // this.props.updateControlState('rotating')
+  }
   render () {
     return (
-      <div ref='earthContainer' draggable='true'>
-        <Earth
-          width={this.props.width}
-          height={this.props.height}
-          primaryMarkerPosition={this.props.primaryMarkerPosition}
-          travelPath={this.props.travelPath}
-          comet={this.props.comet}
-          cameraPosition={this.props.cameraPosition}
-          lightPosition={this.props.lightPosition}
-          locations={this.props.locations}
-          earthRotation={this.props.earthRotation}
-          setManualRenderTrigger={this.intervalTrigger} />
-      </div>
+      <Hammer
+        onSwipe={this.handleSwipe}
+        onPinch={this.handlePinch}
+        onRotate={this.handleRotate}
+        options={{ recognizers: {
+          pinch: { enable: true },
+          rotate: { enable: true }
+        } }}>
+        <div ref='earthContainer' draggable='true'>
+          <Earth
+            width={this.props.width}
+            height={this.props.height}
+            primaryMarkerPosition={this.props.primaryMarkerPosition}
+            travelPath={this.props.travelPath}
+            comet={this.props.comet}
+            cameraPosition={this.props.cameraPosition}
+            lightPosition={this.props.lightPosition}
+            locations={this.props.locations}
+            earthRotation={this.props.earthRotation}
+            setManualRenderTrigger={this.intervalTrigger} />
+        </div>
+      </Hammer>
     )
   }
 }
