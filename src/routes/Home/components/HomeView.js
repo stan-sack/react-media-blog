@@ -7,7 +7,7 @@ export const HomeView = () => (
   <div>
     <h4>Welcome!</h4>
     <img
-      alt='This is a duck, because Redux!'
+      alt='This is a duck, because stan!'
       className='duck'
       src={DuckImage} />
     <Link to='/earth-page' activeClassName='route--active'>
