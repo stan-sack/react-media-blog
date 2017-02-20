@@ -1,5 +1,5 @@
 import React from 'react'
-import { IndexLink, Link } from 'react-router'
+// import { IndexLink, Link } from 'react-router'
 import './Footer.scss'
 
 export const Footer = () => (

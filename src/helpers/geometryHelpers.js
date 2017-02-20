@@ -1,13 +1,16 @@
 import * as THREE from 'three'
 import React from 'react'
-import { EARTH_RADIUS, ARC_HEIGHT_FACTOR, CAMERA_DISTANCE } from '../constants/ThreeGeomerty'
+import { EARTH_RADIUS, ARC_HEIGHT_FACTOR } from '../constants/ThreeGeomerty'
 
 export const createSphereArcs = (destinations) => {
   let i = 0
   let travelPath = []
   while (i < destinations.length - 1) {
     let fromVector = convertLatLonToVec3(destinations[i]['lat'], destinations[i]['lon']).multiplyScalar(EARTH_RADIUS)
-    let toVector = convertLatLonToVec3(destinations[i + 1]['lat'], destinations[i + 1]['lon']).multiplyScalar(EARTH_RADIUS)
+    let toVector = convertLatLonToVec3(
+      destinations[i + 1]['lat'],
+      destinations[i + 1]['lon']
+    ).multiplyScalar(EARTH_RADIUS)
     let angle = fromVector.angleTo(toVector)
     let dist = fromVector.distanceTo(toVector)
     let controlFromVector = fromVector.clone()

@@ -1,5 +1,6 @@
 import React from 'react'
 import DuckImage from '../assets/Duck.jpg'
+import { Link } from 'react-router'
 import './HomeView.scss'
 
 export const HomeView = () => (
@@ -9,6 +10,9 @@ export const HomeView = () => (
       alt='This is a duck, because Redux!'
       className='duck'
       src={DuckImage} />
+    <Link to='/earth-page' activeClassName='route--active'>
+      EarthPage
+    </Link>
   </div>
 )
 

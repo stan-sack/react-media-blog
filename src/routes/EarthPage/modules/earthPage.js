@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { getTravelPath, toEuler } from '../../../helpers/geometryHelpers'
-import { EARTH_RADIUS } from '../../../constants/ThreeGeomerty'
+import { getTravelPath } from '../../../helpers/geometryHelpers'
+import { EARTH_RADIUS, ACCELERATION } from '../../../constants/ThreeGeomerty'
 // ------------------------------------
 // Constants
 // ------------------------------------
@@ -30,6 +30,8 @@ export const calculateNextFrame = (props) => {
   let nextPrimaryMarkerPosition
   let newEarthRotation = props.earthRotation
   let newCameraPosition = props.cameraPosition.normalize().multiplyScalar(props.cameraDistance)
+  let newVelocityScalar = 0.01
+  let newControlState = props.controlState
 
   // we will get this callback every frame
   if (props.controlState === 'auto') {
@@ -55,7 +57,7 @@ export const calculateNextFrame = (props) => {
       0
     )
 
-    let angle = rotationDirection.length() * 0.01
+    let angle = rotationDirection.length() * newVelocityScalar
     let rotationAxis = newCameraPosition.clone()
     let normal = rotationDirection.clone().normalize()
     normal.cross(rotationAxis).normalize()
@@ -64,7 +66,27 @@ export const calculateNextFrame = (props) => {
     newEarthRotation.x += props.earthRotation.x
     newEarthRotation.y += props.earthRotation.y
     newEarthRotation.z += props.earthRotation.z
-    // nextPrimaryMarkerPosition = props.primaryMarkerPosition
+    nextPrimaryMarkerPosition = props.primaryMarkerPosition
+  } else if (props.controlState === 'rolling') {
+    let rotationDirection = new THREE.Vector3(
+      props.twoDimensionalVelocity[1].x - props.twoDimensionalVelocity[0].x,
+      props.twoDimensionalVelocity[1].y - props.twoDimensionalVelocity[0].y,
+      0
+    )
+    newVelocityScalar = props.velocityScalar - ACCELERATION
+    let angle = rotationDirection.length() * (newVelocityScalar)
+    let rotationAxis = newCameraPosition.clone()
+    let normal = rotationDirection.clone().normalize()
+    normal.cross(rotationAxis).normalize()
+    let quaternion = new THREE.Quaternion().setFromAxisAngle(normal, -angle)
+    newEarthRotation = new THREE.Euler().setFromQuaternion(quaternion)
+    newEarthRotation.x += props.earthRotation.x
+    newEarthRotation.y += props.earthRotation.y
+    newEarthRotation.z += props.earthRotation.z
+    nextPrimaryMarkerPosition = props.primaryMarkerPosition
+    if (newVelocityScalar < 0.0002) {
+      newControlState = 'slowRotate'
+    }
   }
 
   nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
@@ -79,7 +101,9 @@ export const calculateNextFrame = (props) => {
     payload : {
       primaryMarkerPosition: nextPrimaryMarkerPosition,
       cameraPosition: newCameraPosition,
-      earthRotation: newEarthRotation
+      earthRotation: newEarthRotation,
+      velocityScalar: newVelocityScalar,
+      controlState: newControlState
     }
   }
 }
@@ -164,7 +188,9 @@ const ACTION_HANDLERS = {
     return Object.assign({}, state, {
       primaryMarkerPosition: action.payload.primaryMarkerPosition,
       cameraPosition: action.payload.cameraPosition,
-      earthRotation: action.payload.earthRotation
+      earthRotation: action.payload.earthRotation,
+      velocityScalar: action.payload.velocityScalar,
+      controlState: action.payload.controlState
     })
   },
   [UPDATE_WINDOW_SIZE]: (state, action) => {
@@ -229,7 +255,8 @@ const initialState = {
   cameraPosition: new THREE.Vector3(0, 0, 2),
   lightPosition: new THREE.Vector3(0.5, 0.5, 1),
   controlState: 'auto',
-  twoDimensionalVelocity: []
+  twoDimensionalVelocity: [],
+  velocityScalar: 0.01
 }
 export default function earthPageReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]

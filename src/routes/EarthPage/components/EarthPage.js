@@ -43,7 +43,7 @@ class EarthPage extends React.Component {
     } else if (event.type === 'drag' && (event.screenX && event.screenY !== 0)) {
       this.props.updateVelocity(event.screenX, this.props.height - event.screenY)
     } else if (event.type === 'dragend') {
-      this.props.updateControlState('slowRotate')
+      this.props.updateControlState('rolling')
     }
   }
   render () {
