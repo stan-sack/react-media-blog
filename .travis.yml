@@ -1,19 +1,21 @@
-# sudo: false
-# language: node_js
-# node_js:
-#   - "6"
-#
-# cache:
-#   directories:
-#     - node_modules
-#
-# install:
-#   - npm install -g yarn
-#   - yarn install
-#
-# script:
-#   - npm run deploy:dev
-#   - npm run deploy:prod
-#
-# after_success:
-#   - npm run codecov
+sudo: false
+language: node_js
+node_js:
+  - "6"
+
+cache:
+  directories:
+    - node_modules
+
+script:
+  - npm run deploy:prod
+
+deploy:
+  on:
+    branch: staging
+  provider: s3
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  bucket: "one-road-to-london"
+  local_dir: dist
+  skip_cleanup: true
