@@ -7,13 +7,15 @@ cache:
   directories:
     - node_modules
 
+script:
+  - npm run deploy:prod
+
 deploy:
   on:
     branch: staging
   provider: s3
-  script: npm run deploy:prod
   access_key_id: $AWS_ACCESS_KEY_ID
-  secret_access_key: $AWS_SECRET_KEY_SECRET
+  secret_access_key: $AWS_ACCESS_KEY_SECRET
   bucket: "one-road-to-london"
   local_dir: dist
   skip_cleanup: true
