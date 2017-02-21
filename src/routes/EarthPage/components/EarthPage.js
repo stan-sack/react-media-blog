@@ -11,9 +11,13 @@ class EarthPage extends React.Component {
       this.props.updateWindowSize(window.innerWidth, window.innerHeight)
       this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     }
+    this.updateTouchEnabled = () => {
+      this.props.updateTouchEnabled(true)
+    }
   }
   componentDidMount () {
     window.addEventListener('resize', this.updateDimensions)
+    window.addEventListener('touchstart', this.updateTouchEnabled)
     this.props.updateWindowSize(window.innerWidth, window.innerHeight)
     this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
@@ -28,6 +32,7 @@ class EarthPage extends React.Component {
     clearInterval(this.ticker)
   }
   intervalTrigger = (renderTrigger) => {
+    // this.renderTrigger = renderTrigger
     this.ticker = setInterval(() => {
       this.props.calculateNextFrame(this.props)
       renderTrigger()
@@ -39,40 +44,53 @@ class EarthPage extends React.Component {
   }
   handleMouseDrag = (event) => {
     if (event.type === 'dragstart') {
+      this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
+      this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
       this.props.updateControlState('drag')
     } else if (event.type === 'drag' && (event.screenX && event.screenY !== 0)) {
-      this.props.updateVelocity(event.screenX, this.props.height - event.screenY)
+      this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
     } else if (event.type === 'dragend') {
       this.props.updateControlState('rolling')
     }
   }
   handleSwipe = (event) => {
-    console.log(event)
+    this.props.updateVelocityPair(0, 0)
+    this.props.updateVelocityPair(event.deltaX / (event.deltaTime * 0.5), -event.deltaY / (0.5 * event.deltaTime))
+    this.props.updateControlState('rolling')
   }
   handlePinch = (event) => {
-    if (event.isFirst) {
-      this.props.updateControlState('rolling')
-    } else if (event.isFinal) {
-      this.props.updateControlState('slowRotate')
-    } else {
+    if (event.overallVelocity > 0.05 || event.overallVelocity < -0.05) {
       this.props.updateCameraDistance(event, this.props.cameraDistance, true)
     }
   }
-  handleRotate = (event) => {
-    console.log('rotate')
-    console.log(event)
-    // this.props.updateControlState('rotating')
-  }
-  render () {
-    return (
-      <Hammer
-        onSwipe={this.handleSwipe}
-        onPinch={this.handlePinch}
-        onRotate={this.handleRotate}
-        options={{ recognizers: {
-          pinch: { enable: true },
-          rotate: { enable: true }
-        } }}>
+  addTouchControls = (isTouch) => {
+    if (isTouch) {
+      return (
+        <Hammer
+          onSwipe={this.handleSwipe}
+          onPinch={this.handlePinch}
+          direction={'DIRECTION_ALL'}
+          options={{ recognizers: {
+            pinch: { enable: true },
+            rotate: { enable: true }
+          } }}>
+          <div ref='earthContainer' draggable='true'>
+            <Earth
+              width={this.props.width}
+              height={this.props.height}
+              primaryMarkerPosition={this.props.primaryMarkerPosition}
+              travelPath={this.props.travelPath}
+              comet={this.props.comet}
+              cameraPosition={this.props.cameraPosition}
+              lightPosition={this.props.lightPosition}
+              locations={this.props.locations}
+              earthRotation={this.props.earthRotation}
+              setManualRenderTrigger={this.intervalTrigger} />
+          </div>
+        </Hammer>
+      )
+    } else {
+      return (
         <div ref='earthContainer' draggable='true'>
           <Earth
             width={this.props.width}
@@ -86,7 +104,12 @@ class EarthPage extends React.Component {
             earthRotation={this.props.earthRotation}
             setManualRenderTrigger={this.intervalTrigger} />
         </div>
-      </Hammer>
+      )
+    }
+  }
+  render () {
+    return (
+      this.addTouchControls(this.props.touchEnabled)
     )
   }
 }
@@ -110,8 +133,10 @@ EarthPage.propTypes = {
   updateControlState: PropTypes.func,
   earthRotation: PropTypes.object,
   initialiseVelocityCentre: PropTypes.func,
-  updateVelocity: PropTypes.func,
-  twoDimensionalVelocity: PropTypes.array
+  updateVelocityPair: PropTypes.func,
+  twoDimensionalVelocity: PropTypes.array,
+  updateTouchEnabled: PropTypes.func,
+  touchEnabled: PropTypes.bool
 }
 
 export default EarthPage

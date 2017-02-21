@@ -10,7 +10,8 @@ export const SET_MANUAL_RENDER_TRIGGER = 'SET_MANUAL_RENDER_TRIGGER'
 export const UPDATE_CAMERA_DISTACE = 'UPDATE_CAMERA_DISTACE'
 export const UPDATE_CONTROL_STATE = 'UPDATE_CONTROL_STATE'
 export const INITIALISE_VELOCITY_CENTRE = 'INITIALISE_VELOCITY_CENTRE'
-export const UPDATE_VELOCITY = 'UPDATE_VELOCITY'
+export const UPDATE_VELOCITY_PAIR = 'UPDATE_VELOCITY_PAIR'
+export const UPDATE_TOUCH_ENABLED = 'UPDATE_TOUCH_ENABLED'
 
 // ------------------------------------
 // Actions
@@ -83,7 +84,6 @@ export const calculateNextFrame = (props) => {
     newEarthRotation.x += props.earthRotation.x
     newEarthRotation.y += props.earthRotation.y
     newEarthRotation.z += props.earthRotation.z
-    nextPrimaryMarkerPosition = props.primaryMarkerPosition
     if (newVelocityScalar < 0.0002) {
       newControlState = 'slowRotate'
     }
@@ -124,13 +124,20 @@ export const initialiseVelocityCentre = (windowWidth, windowHeight) => {
   }
 }
 
-export const updateVelocity = (cursorX, cursorY) => {
+export const updateVelocityPair = (cursorX, cursorY) => {
   return {
-    type: UPDATE_VELOCITY,
+    type: UPDATE_VELOCITY_PAIR,
     payload: {
       x: cursorX,
       y: cursorY
     }
+  }
+}
+
+export const updateTouchEnabled = (isTouch) => {
+  return {
+    type: UPDATE_TOUCH_ENABLED,
+    payload: isTouch
   }
 }
 
@@ -148,7 +155,7 @@ export const updateCameraDistance = (data, cameraDistance, isPinch) => {
       newCameraDistance = cameraDistance + data.velocity
     } else {
       // TODO: data.velocity may already be negative when pinchout
-      newCameraDistance = Math.max(cameraDistance - data.velocity, EARTH_RADIUS + 0.1)
+      newCameraDistance = Math.max(cameraDistance + data.velocity, EARTH_RADIUS + 0.1)
     }
   }
 
@@ -182,13 +189,14 @@ export const updateControlState = (newState) => {
   }
 }
 
-export const actions = {
-  calculateNextFrame,
-  updateWindowSize,
-  setManualRenderTrigger,
-  updateCameraDistance,
-  updateControlState
-}
+// export const actions = {
+//   calculateNextFrame,
+//   updateWindowSize,
+//   setManualRenderTrigger,
+//   updateCameraDistance,
+//   updateControlState,
+//   updateTouchEnabled
+// }
 
 // ------------------------------------
 // Action Handlers
@@ -224,11 +232,16 @@ const ACTION_HANDLERS = {
       twoDimensionalVelocity: action.payload
     })
   },
-  [UPDATE_VELOCITY]: (state, action) => {
+  [UPDATE_VELOCITY_PAIR]: (state, action) => {
     return Object.assign({}, state, {
       twoDimensionalVelocity: [
         state.twoDimensionalVelocity[1], action.payload
       ]
+    })
+  },
+  [UPDATE_TOUCH_ENABLED]: (state, action) => {
+    return Object.assign({}, state, {
+      touchEnabled: action.payload
     })
   },
   [UPDATE_CONTROL_STATE]: (state, action) => {
@@ -265,8 +278,9 @@ const initialState = {
   cameraPosition: new THREE.Vector3(0, 0, 2),
   lightPosition: new THREE.Vector3(0.5, 0.5, 1),
   controlState: 'auto',
-  twoDimensionalVelocity: [],
-  velocityScalar: 0.01
+  twoDimensionalVelocityPair: [],
+  velocityScalar: 0.01,
+  touchEnabled: false
 }
 export default function earthPageReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]
