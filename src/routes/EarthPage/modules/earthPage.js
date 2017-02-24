@@ -53,11 +53,10 @@ export const calculateNextFrame = (props) => {
     // newLightPosition.applyMatrix4(matrix)
   } else if (props.controlState === 'drag') {
     let rotationDirection = new THREE.Vector3(
-      props.twoDimensionalVelocity[1].x - props.twoDimensionalVelocity[0].x,
-      props.twoDimensionalVelocity[1].y - props.twoDimensionalVelocity[0].y,
+      props.twoDimensionalVelocityPair[1].x - props.twoDimensionalVelocityPair[0].x,
+      props.twoDimensionalVelocityPair[1].y - props.twoDimensionalVelocityPair[0].y,
       0
     )
-
     let angle = rotationDirection.length() * newVelocityScalar
     let rotationAxis = newCameraPosition.clone()
     let normal = rotationDirection.clone().normalize()
@@ -70,8 +69,8 @@ export const calculateNextFrame = (props) => {
     nextPrimaryMarkerPosition = props.primaryMarkerPosition
   } else if (props.controlState === 'rolling') {
     let rotationDirection = new THREE.Vector3(
-      props.twoDimensionalVelocity[1].x - props.twoDimensionalVelocity[0].x,
-      props.twoDimensionalVelocity[1].y - props.twoDimensionalVelocity[0].y,
+      props.twoDimensionalVelocityPair[1].x - props.twoDimensionalVelocityPair[0].x,
+      props.twoDimensionalVelocityPair[1].y - props.twoDimensionalVelocityPair[0].y,
       0
     )
     newVelocityScalar = props.velocityScalar - ACCELERATION
@@ -124,7 +123,7 @@ export const initialiseVelocityCentre = (windowWidth, windowHeight) => {
   }
 }
 
-export const updateVelocityPair = (cursorX, cursorY) => {
+export const updateVelocityPair = (cursorX, cursorY, props) => {
   return {
     type: UPDATE_VELOCITY_PAIR,
     payload: {
@@ -189,14 +188,15 @@ export const updateControlState = (newState) => {
   }
 }
 
-// export const actions = {
-//   calculateNextFrame,
-//   updateWindowSize,
-//   setManualRenderTrigger,
-//   updateCameraDistance,
-//   updateControlState,
-//   updateTouchEnabled
-// }
+export const actions = {
+  calculateNextFrame,
+  updateWindowSize,
+  setManualRenderTrigger,
+  updateCameraDistance,
+  updateControlState,
+  updateTouchEnabled,
+  updateVelocityPair
+}
 
 // ------------------------------------
 // Action Handlers
@@ -229,13 +229,13 @@ const ACTION_HANDLERS = {
   },
   [INITIALISE_VELOCITY_CENTRE]: (state, action) => {
     return Object.assign({}, state, {
-      twoDimensionalVelocity: action.payload
+      twoDimensionalVelocityPair: action.payload
     })
   },
   [UPDATE_VELOCITY_PAIR]: (state, action) => {
     return Object.assign({}, state, {
-      twoDimensionalVelocity: [
-        state.twoDimensionalVelocity[1], action.payload
+      twoDimensionalVelocityPair: [
+        state.twoDimensionalVelocityPair[1], action.payload
       ]
     })
   },
@@ -278,7 +278,10 @@ const initialState = {
   cameraPosition: new THREE.Vector3(0, 0, 2),
   lightPosition: new THREE.Vector3(0.5, 0.5, 1),
   controlState: 'auto',
-  twoDimensionalVelocityPair: [],
+  twoDimensionalVelocityPair: [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 }
+  ],
   velocityScalar: 0.01,
   touchEnabled: false
 }

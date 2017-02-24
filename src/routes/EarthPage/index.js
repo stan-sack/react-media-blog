@@ -20,5 +20,12 @@ export default (store) => ({
 
       /* Webpack named bundle   */
     }, 'earthPage')
+  },
+  onEnter (nextState, replace, callback) {
+    console.log('enter')
+    callback()
+    // fetch(...)
+    // .then(console.log("fetch complete"))
+    // .then(response = response.json())
   }
 })

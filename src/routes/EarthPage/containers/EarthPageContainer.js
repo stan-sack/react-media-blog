@@ -40,7 +40,7 @@ const mapStateToProps = (state) => ({
   controlState: state.earthPage.controlState,
   earthRotation: state.earthPage.earthRotation,
   velocityScalar: state.earthPage.velocityScalar,
-  twoDimensionalVelocity: state.earthPage.twoDimensionalVelocity,
+  twoDimensionalVelocityPair: state.earthPage.twoDimensionalVelocityPair,
   touchEnabled: state.earthPage.touchEnabled
 })
 

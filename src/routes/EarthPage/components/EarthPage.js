@@ -9,7 +9,7 @@ class EarthPage extends React.Component {
     super(props, context)
     this.updateDimensions = () => {
       this.props.updateWindowSize(window.innerWidth, window.innerHeight)
-      this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
+    //   this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     }
     this.updateTouchEnabled = () => {
       this.props.updateTouchEnabled(true)
@@ -19,7 +19,7 @@ class EarthPage extends React.Component {
     window.addEventListener('resize', this.updateDimensions)
     window.addEventListener('touchstart', this.updateTouchEnabled)
     this.props.updateWindowSize(window.innerWidth, window.innerHeight)
-    this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
+    // this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
     this.refs.earthContainer.addEventListener('DOMMouseScroll', this.handleMouseScroll, false)
     this.refs.earthContainer.addEventListener('dragstart', this.handleMouseDrag, false)
@@ -48,14 +48,20 @@ class EarthPage extends React.Component {
       this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
       this.props.updateControlState('drag')
     } else if (event.type === 'drag' && (event.screenX && event.screenY !== 0)) {
-      this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
+      if (!(event.screenX === this.props.twoDimensionalVelocityPair[1].x &&
+          this.props.height - event.screenY === this.props.twoDimensionalVelocityPair[1].y)) {
+        this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
+      }
     } else if (event.type === 'dragend') {
       this.props.updateControlState('rolling')
     }
   }
   handleSwipe = (event) => {
     this.props.updateVelocityPair(0, 0)
-    this.props.updateVelocityPair(event.deltaX / (event.deltaTime * 0.5), -event.deltaY / (0.5 * event.deltaTime))
+    this.props.updateVelocityPair(
+        event.deltaX / (event.deltaTime * 0.5),
+        -event.deltaY / (0.5 * event.deltaTime)
+    )
     this.props.updateControlState('rolling')
   }
   handlePinch = (event) => {
@@ -134,7 +140,7 @@ EarthPage.propTypes = {
   earthRotation: PropTypes.object,
   initialiseVelocityCentre: PropTypes.func,
   updateVelocityPair: PropTypes.func,
-  twoDimensionalVelocity: PropTypes.array,
+  twoDimensionalVelocityPair: PropTypes.array,
   updateTouchEnabled: PropTypes.func,
   touchEnabled: PropTypes.bool
 }
