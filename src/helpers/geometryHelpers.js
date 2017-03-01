@@ -73,12 +73,12 @@ export const getTravelPath = (destinations) => {
   return flatInterpCurves
 }
 
-const addMarker = (locationObject) => {
+const addMarker = (locationObject, index) => {
   let colory = new THREE.Color('skyblue')
   let markerPosition = convertLatLonToVec3(locationObject['lat'], locationObject['lon']).multiplyScalar(EARTH_RADIUS)
   let marker = (
     <mesh
-      key={locationObject['dest']}
+      key={index}
       position={markerPosition}>
       <sphereGeometry
         radius={0.01}

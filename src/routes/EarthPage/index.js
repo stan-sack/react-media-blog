@@ -1,4 +1,5 @@
 import { injectReducer } from '../../store/reducers'
+import { fetchAllData } from './modules/earthPage'
 
 export default (store) => ({
   path : 'earth-page',
@@ -22,10 +23,7 @@ export default (store) => ({
     }, 'earthPage')
   },
   onEnter (nextState, replace, callback) {
-    console.log('enter')
+    store.dispatch(fetchAllData())
     callback()
-    // fetch(...)
-    // .then(console.log("fetch complete"))
-    // .then(response = response.json())
   }
 })

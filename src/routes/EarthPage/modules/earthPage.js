@@ -12,6 +12,7 @@ export const UPDATE_CONTROL_STATE = 'UPDATE_CONTROL_STATE'
 export const INITIALISE_VELOCITY_CENTRE = 'INITIALISE_VELOCITY_CENTRE'
 export const UPDATE_VELOCITY_PAIR = 'UPDATE_VELOCITY_PAIR'
 export const UPDATE_TOUCH_ENABLED = 'UPDATE_TOUCH_ENABLED'
+export const INJECT_FACEBOOK_PHOTOS = 'INJECT_FACEBOOK_PHOTOS'
 
 // ------------------------------------
 // Actions
@@ -86,6 +87,14 @@ export const calculateNextFrame = (props) => {
     if (newVelocityScalar < 0.0002) {
       newControlState = 'slowRotate'
     }
+  } else if (props.controlState === 'slowRotate') {
+    let normal = new THREE.Vector3(0, 1, 0)
+    let angle = 0.001
+    let quaternion = new THREE.Quaternion().setFromAxisAngle(normal, -angle)
+    newEarthRotation = new THREE.Euler().setFromQuaternion(quaternion)
+    newEarthRotation.x += props.earthRotation.x
+    newEarthRotation.y += props.earthRotation.y
+    newEarthRotation.z += props.earthRotation.z
   }
 
   nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
@@ -188,6 +197,42 @@ export const updateControlState = (newState) => {
   }
 }
 
+export const injectFacebookPhotos = (newLocations) => {
+  return {
+    type    : INJECT_FACEBOOK_PHOTOS,
+    payload : {
+      locations: newLocations,
+      travelPath: getTravelPath(newLocations)
+    }
+  }
+}
+
+export const fetchFacebookPhotos = () => {
+  return (dispatch) => {
+    return (
+      fetch('https://1lf6gan537.execute-api.ap-southeast-2.amazonaws.com/dev/fb/photos')
+      .then((response) => response.json())
+      .then((json) => Promise.all(json.photos.map((photo) => {
+        return {
+          dest: photo.caption,
+          lat: photo.location.latitude,
+          lon: photo.location.longitude
+        }
+      })))
+      .then((locations) => dispatch(injectFacebookPhotos(locations)))
+      .catch((error) => console.log(error))
+    )
+  }
+}
+
+export const fetchAllData = () => {
+  return (dispatch) => {
+    Promise.all([
+      dispatch(fetchFacebookPhotos())
+    ]).then(dispatch(updateControlState('auto')))
+  }
+}
+
 export const actions = {
   calculateNextFrame,
   updateWindowSize,
@@ -195,7 +240,8 @@ export const actions = {
   updateCameraDistance,
   updateControlState,
   updateTouchEnabled,
-  updateVelocityPair
+  updateVelocityPair,
+  fetchAllData
 }
 
 // ------------------------------------
@@ -248,6 +294,12 @@ const ACTION_HANDLERS = {
     return Object.assign({}, state, {
       controlState: action.payload
     })
+  },
+  [INJECT_FACEBOOK_PHOTOS]: (state, action) => {
+    return Object.assign({}, state, {
+      travelPath: action.payload.travelPath,
+      locations: action.payload.locations
+    })
   }
 }
 
@@ -255,29 +307,29 @@ const ACTION_HANDLERS = {
 // Reducer
 // ------------------------------------
 
-let tempLocations = [
-  { dest: 'Adelaide', lat: -34.9288, lon: 138.6007 },
-  { dest: 'Sydney', lat: -33.8688, lon: 151.2093 },
-  { dest: 'Ulaanbaatar', lat: 47.8864, lon: 106.9057 },
-  { dest: 'Berlin', lat: 52.5200, lon: 13.4050 },
-  { dest: 'Amsterdam', lat: 52.3702, lon: 4.8952 },
-  { dest: 'New York', lat: 40.7128, lon: -74.0059 },
-  { dest: 'AdelaideHome', lat: -34.9288, lon: 138.6007 }
-]
+// let tempLocations = [
+//   { dest: 'Adelaide', lat: -34.9288, lon: 138.6007 },
+//   { dest: 'Sydney', lat: -33.8688, lon: 151.2093 },
+//   { dest: 'Ulaanbaatar', lat: 47.8864, lon: 106.9057 },
+//   { dest: 'Berlin', lat: 52.5200, lon: 13.4050 },
+//   { dest: 'Amsterdam', lat: 52.3702, lon: 4.8952 },
+//   { dest: 'New York', lat: 40.7128, lon: -74.0059 },
+//   { dest: 'AdelaideHome', lat: -34.9288, lon: 138.6007 }
+// ]
 
-let temp = getTravelPath(tempLocations)
+// let temp = getTravelPath(tempLocations)
 
 const initialState = {
   width: 0,
   height: 0,
   primaryMarkerPosition: 0,
-  locations: tempLocations,
-  travelPath: temp,
+  locations: [],
+  travelPath: [],
   earthRotation: new THREE.Euler(),
   cameraDistance: 2,
   cameraPosition: new THREE.Vector3(0, 0, 2),
   lightPosition: new THREE.Vector3(0.5, 0.5, 1),
-  controlState: 'auto',
+  controlState: 'slowRotate',
   twoDimensionalVelocityPair: [
     { x: 0, y: 0 },
     { x: 0, y: 0 }
