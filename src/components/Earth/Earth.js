@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react'
+import React from 'react'
+import PropTypes from 'prop-types'
 import './Earth.scss'
 import * as THREE from 'three'
 import React3 from 'react-three-renderer'

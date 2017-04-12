@@ -219,7 +219,8 @@ export const fetchFacebookPhotos = () => {
           lon: photo.location.longitude
         }
       })))
-      .then((locations) => dispatch(injectFacebookPhotos(locations)))
+      // inject lsat 20 posts
+      .then((locations) => dispatch(injectFacebookPhotos(locations.slice(Math.max(locations.length - 20, 1)))))
       .catch((error) => console.log(error))
     )
   }
@@ -229,7 +230,9 @@ export const fetchAllData = () => {
   return (dispatch) => {
     Promise.all([
       dispatch(fetchFacebookPhotos())
-    ]).then(dispatch(updateControlState('auto')))
+    ])
+    // .then(dispatch(updateControlState('auto')))
+    .then(console.log('promises done'))
   }
 }
 
