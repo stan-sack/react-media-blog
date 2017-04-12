@@ -63,15 +63,10 @@ export const Earth = (props) => (
 Earth.propTypes = {
   width : PropTypes.number,
   height : PropTypes.number,
-  primaryMarkerPosition : PropTypes.number,
-  travelPath : PropTypes.array,
-  comet : PropTypes.array,
   cameraPosition: PropTypes.object,
   lightPosition: PropTypes.object,
   locations: PropTypes.array,
   setManualRenderTrigger: PropTypes.func,
-  updateCameraPosition: PropTypes.func,
-  updateLightPosition: PropTypes.func,
   earthRotation: PropTypes.object
 }
 
