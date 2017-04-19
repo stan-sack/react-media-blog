@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Earth from 'components/Earth'
 import { ANIMATION_FPS } from '../../../constants/ThreeGeomerty'
+import { KEY_CODES } from '../../../constants/Meta'
 import Hammer from 'react-hammerjs'
 // import EarthOverlay from 'components/EarthOverlay'
 
@@ -19,6 +20,7 @@ class EarthPage extends React.Component {
   componentDidMount () {
     window.addEventListener('resize', this.updateDimensions)
     window.addEventListener('touchstart', this.updateTouchEnabled)
+    document.addEventListener('keydown', this.handleKeyPress, false)
     this.props.updateWindowSize(window.innerWidth, window.innerHeight)
     // this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
@@ -26,7 +28,6 @@ class EarthPage extends React.Component {
     this.refs.earthContainer.addEventListener('dragstart', this.handleMouseDrag, false)
     this.refs.earthContainer.addEventListener('drag', this.handleMouseDrag, false)
     this.refs.earthContainer.addEventListener('dragend', this.handleMouseDrag, false)
-    this.refs.earthContainer.addEventListener('onmousemove', this.handleMouseMove, false)
   }
   componentWillUnmount () {
     window.removeEventListener('resize', this.updateDimensions)
@@ -38,6 +39,15 @@ class EarthPage extends React.Component {
       this.props.calculateNextFrame(this.props)
       renderTrigger()
     }, ANIMATION_FPS)
+  }
+  handleKeyPress = (event) => {
+    if (event.keyCode === KEY_CODES.RIGHT_ARROW) {
+      this.props.updateControlState('switchingFocus')
+      this.props.focusNext(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+    } else if (event.keyCode === KEY_CODES.LEFT_ARROW) {
+      this.props.updateControlState('switchingFocus')
+      this.props.focusPrevious(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+    }
   }
   handleMouseScroll = (event) => {
     event.preventDefault()
@@ -139,6 +149,8 @@ EarthPage.propTypes = {
   updateVelocityPair: PropTypes.func,
   twoDimensionalVelocityPair: PropTypes.array,
   updateTouchEnabled: PropTypes.func,
+  focusNext: PropTypes.func,
+  focusPrevious: PropTypes.func,
   touchEnabled: PropTypes.bool
 }
 

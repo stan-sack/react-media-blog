@@ -50,7 +50,7 @@ export const drawCurves = (curve, index) => {
   )
 }
 
-const convertLatLonToVec3 = (lat, lon) => {
+export const convertLatLonToVec3 = (lat, lon) => {
   lat = lat * Math.PI / 180.0
   lon = -lon * Math.PI / 180.0
 
@@ -153,4 +153,23 @@ export const toEuler = (x, y, z, angle) => {
     attitude: attitude,
     bank: bank
   }
+}
+
+// start here
+export const getPathToNextFocus = (cameraPosition, locations, currentRotation) => {
+  let nextFocus = locations[0]
+  let currentAdjustedPosition = cameraPosition.clone().applyQuaternion(currentRotation.clone().inverse())
+  let minAngle = Math.abs(locations[0].angle.clone().distanceTo(currentAdjustedPosition))
+
+  locations.slice(1).map((location, index) => {
+    if (Math.abs(location.angle.clone().distanceTo(currentAdjustedPosition)) < minAngle) {
+      nextFocus = location
+    }
+  })
+  console.log(locations)
+  console.log(nextFocus)
+}
+
+export const getPathToPreviousFocus = (cameraPosition, locations, currentRotation) => {
+
 }

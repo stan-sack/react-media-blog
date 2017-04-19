@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { getTravelPath } from '../../../helpers/geometryHelpers'
+import { getTravelPath, getPathToNextFocus, getPathToPreviousFocus,
+  convertLatLonToVec3 } from '../../../helpers/geometryHelpers'
 import { EARTH_RADIUS, ACCELERATION } from '../../../constants/ThreeGeomerty'
 // ------------------------------------
 // Constants
@@ -13,6 +14,8 @@ export const INITIALISE_VELOCITY_CENTRE = 'INITIALISE_VELOCITY_CENTRE'
 export const UPDATE_VELOCITY_PAIR = 'UPDATE_VELOCITY_PAIR'
 export const UPDATE_TOUCH_ENABLED = 'UPDATE_TOUCH_ENABLED'
 export const INJECT_FACEBOOK_PHOTOS = 'INJECT_FACEBOOK_PHOTOS'
+export const FOCUS_NEXT = 'FOCUS_NEXT'
+export const FOCUS_PREVIOUS = 'FOCUS_PREVIOUS'
 
 // ------------------------------------
 // Actions
@@ -37,21 +40,9 @@ export const calculateNextFrame = (props) => {
 
   // we will get this callback every frame
   if (props.controlState === 'auto') {
-    let currentPos = props.travelPath[props.primaryMarkerPosition].clone()
-    let normal = currentPos.clone()
-    normal.cross(newCameraPosition).normalize()
-    let angle = newCameraPosition.angleTo(currentPos)
-    let quaternion = new THREE.Quaternion().setFromAxisAngle(normal, angle)
-    newEarthRotation = new THREE.Euler().setFromQuaternion(quaternion)
-
-    // KEEP THIS CODE ITS FOR ROTATING THE CAMERA AND LIGHT!!!
-    // let oldCam = props.cameraPosition.clone()
-    // let currentPos = props.travelPath[props.primaryMarkerPosition].clone()
-    // let newCam = newCameraPosition.clone()
-    // let quaternion = new THREE.Quaternion().setFromUnitVectors(oldCam.normalize(), newCam.normalize())
-    // let matrix = new THREE.Matrix4().makeRotationFromQuaternion(quaternion)
-    // newLightPosition = props.lightPosition.clone()
-    // newLightPosition.applyMatrix4(matrix)
+    let currentPos = props.travelPath[props.primaryMarkerPosition].clone().normalize()
+    let camToCurrentPos = new THREE.Quaternion().setFromUnitVectors(currentPos, newCameraPosition.clone().normalize())
+    newEarthRotation = camToCurrentPos.clone()
   } else if (props.controlState === 'drag') {
     let rotationDirection = new THREE.Vector3(
       props.twoDimensionalVelocityPair[1].x - props.twoDimensionalVelocityPair[0].x,
@@ -61,12 +52,9 @@ export const calculateNextFrame = (props) => {
     let angle = rotationDirection.length() * newVelocityScalar
     let rotationAxis = newCameraPosition.clone()
     let normal = rotationDirection.clone().normalize()
-    normal.cross(rotationAxis).normalize()
+    normal.cross(rotationAxis).normalize().applyQuaternion(props.earthRotation.clone().inverse())
     let quaternion = new THREE.Quaternion().setFromAxisAngle(normal, -angle)
-    newEarthRotation = new THREE.Euler().setFromQuaternion(quaternion)
-    newEarthRotation.x += props.earthRotation.x
-    newEarthRotation.y += props.earthRotation.y
-    newEarthRotation.z += props.earthRotation.z
+    newEarthRotation = props.earthRotation.clone().normalize().multiply(quaternion)
     nextPrimaryMarkerPosition = props.primaryMarkerPosition
   } else if (props.controlState === 'rolling') {
     let rotationDirection = new THREE.Vector3(
@@ -78,23 +66,21 @@ export const calculateNextFrame = (props) => {
     let angle = rotationDirection.length() * (newVelocityScalar)
     let rotationAxis = newCameraPosition.clone()
     let normal = rotationDirection.clone().normalize()
-    normal.cross(rotationAxis).normalize()
+    normal.cross(rotationAxis).normalize().applyQuaternion(props.earthRotation.clone().inverse())
     let quaternion = new THREE.Quaternion().setFromAxisAngle(normal, -angle)
-    newEarthRotation = new THREE.Euler().setFromQuaternion(quaternion)
-    newEarthRotation.x += props.earthRotation.x
-    newEarthRotation.y += props.earthRotation.y
-    newEarthRotation.z += props.earthRotation.z
+    newEarthRotation = props.earthRotation.clone().multiply(quaternion)
     if (newVelocityScalar < 0.0002) {
       newControlState = 'slowRotate'
     }
   } else if (props.controlState === 'slowRotate') {
-    let normal = new THREE.Vector3(0, 1, 0)
+    let normal = new THREE.Vector3(0, 1, 0).applyQuaternion(props.earthRotation.clone().inverse())
     let angle = 0.001
     let quaternion = new THREE.Quaternion().setFromAxisAngle(normal, -angle)
-    newEarthRotation = new THREE.Euler().setFromQuaternion(quaternion)
-    newEarthRotation.x += props.earthRotation.x
-    newEarthRotation.y += props.earthRotation.y
-    newEarthRotation.z += props.earthRotation.z
+    newEarthRotation = props.earthRotation.clone().multiply(quaternion)
+  } else if (props.controlState === 'focus') {
+    // do nothing here yet
+  } else if (props.controlState === 'switchingFocus') {
+    console.log('switchingFocus')
   }
 
   nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
@@ -129,6 +115,22 @@ export const initialiseVelocityCentre = (windowWidth, windowHeight) => {
         y: windowHeight / 2
       }
     ]
+  }
+}
+
+export const focusNext = (currentPos, locations, earthRotation) => {
+  let path = getPathToNextFocus(currentPos, locations, earthRotation)
+  return {
+    type: FOCUS_NEXT,
+    payload: undefined
+  }
+}
+
+export const focusPrevious = (currentPos, locations, earthRotation) => {
+  let path = getPathToPreviousFocus(currentPos, locations, earthRotation)
+  return {
+    type: FOCUS_PREVIOUS,
+    payload: undefined
   }
 }
 
@@ -216,7 +218,10 @@ export const fetchFacebookPhotos = () => {
         return {
           dest: photo.caption,
           lat: photo.location.latitude,
-          lon: photo.location.longitude
+          lon: photo.location.longitude,
+          angle: convertLatLonToVec3(photo.location.latitude, photo.location.longitude).normalize(),
+          text: photo.caption,
+          // photo: Promise.all(fetch('http://nemanjakovacevic.net/wp-content/uploads/2013/07/placeholder.png'))
         }
       })))
       // inject lsat 20 posts
@@ -231,21 +236,20 @@ export const fetchAllData = () => {
     Promise.all([
       dispatch(fetchFacebookPhotos())
     ])
-    // .then(dispatch(updateControlState('auto')))
-    .then(console.log('promises done'))
+    .then(() => dispatch(updateControlState('auto')))
   }
 }
 
-export const actions = {
-  calculateNextFrame,
-  updateWindowSize,
-  setManualRenderTrigger,
-  updateCameraDistance,
-  updateControlState,
-  updateTouchEnabled,
-  updateVelocityPair,
-  fetchAllData
-}
+// export const actions = {
+//   calculateNextFrame,
+//   updateWindowSize,
+//   setManualRenderTrigger,
+//   updateCameraDistance,
+//   updateControlState,
+//   updateTouchEnabled,
+//   updateVelocityPair,
+//   fetchAllData
+// }
 
 // ------------------------------------
 // Action Handlers
@@ -328,7 +332,8 @@ const initialState = {
   primaryMarkerPosition: 0,
   locations: [],
   travelPath: [],
-  earthRotation: new THREE.Euler(),
+  focusPath: [],
+  earthRotation: new THREE.Quaternion(),
   cameraDistance: 2,
   cameraPosition: new THREE.Vector3(0, 0, 2),
   lightPosition: new THREE.Vector3(0.5, 0.5, 1),

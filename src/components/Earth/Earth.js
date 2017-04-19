@@ -28,7 +28,7 @@ export const Earth = (props) => (
         color={0xffffff}
         intensity={1}
         position={props.lightPosition} />
-      <group rotation={props.earthRotation}>
+      <group rotation={new THREE.Euler().setFromQuaternion(props.earthRotation)}>
         <mesh>
           <sphereGeometry
             radius={EARTH_RADIUS * 3}
@@ -55,7 +55,9 @@ export const Earth = (props) => (
         {generateComet(props)}
         {plotPoints(props.locations)}
         {createSphereArcs(props.locations).map(drawCurves)}
+        <axisHelper size={10} />
       </group>
+      <axisHelper size={10} />
     </scene>
   </React3>
 )
