@@ -119,7 +119,7 @@ export const initialiseVelocityCentre = (windowWidth, windowHeight) => {
 }
 
 export const focusNext = (currentPos, locations, earthRotation) => {
-  let path = getPathToNextFocus(currentPos, locations, earthRotation)
+  // let path = getPathToNextFocus(currentPos, locations, earthRotation)
   return {
     type: FOCUS_NEXT,
     payload: undefined
@@ -127,7 +127,7 @@ export const focusNext = (currentPos, locations, earthRotation) => {
 }
 
 export const focusPrevious = (currentPos, locations, earthRotation) => {
-  let path = getPathToPreviousFocus(currentPos, locations, earthRotation)
+  // let path = getPathToPreviousFocus(currentPos, locations, earthRotation)
   return {
     type: FOCUS_PREVIOUS,
     payload: undefined
@@ -220,7 +220,7 @@ export const fetchFacebookPhotos = () => {
           lat: photo.location.latitude,
           lon: photo.location.longitude,
           angle: convertLatLonToVec3(photo.location.latitude, photo.location.longitude).normalize(),
-          text: photo.caption,
+          text: photo.caption
           // photo: Promise.all(fetch('http://nemanjakovacevic.net/wp-content/uploads/2013/07/placeholder.png'))
         }
       })))
