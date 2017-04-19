@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { getTravelPath, getPathToNextFocus, getPathToPreviousFocus,
+import { getTravelPath,
+  // getPathToNextFocus, getPathToPreviousFocus,
   convertLatLonToVec3 } from '../../../helpers/geometryHelpers'
 import { EARTH_RADIUS, ACCELERATION } from '../../../constants/ThreeGeomerty'
 // ------------------------------------
