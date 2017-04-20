@@ -6,11 +6,23 @@ export const createSphereArcs = (destinations) => {
   let i = 0
   let travelPath = []
   while (i < destinations.length - 1) {
-    let fromVector = convertLatLonToVec3(destinations[i]['lat'], destinations[i]['lon']).multiplyScalar(EARTH_RADIUS)
-    let toVector = convertLatLonToVec3(
-      destinations[i + 1]['lat'],
-      destinations[i + 1]['lon']
-    ).multiplyScalar(EARTH_RADIUS)
+
+    let fromVector = destinations[i]
+    if (!('x' in fromVector)) {
+      fromVector = convertLatLonToVec3(
+        destinations[i]['lat'],
+        destinations[i]['lon']
+      ).multiplyScalar(EARTH_RADIUS)
+    }
+
+    let toVector = destinations[i + 1]
+    if (!('x' in toVector)) {
+      toVector = convertLatLonToVec3(
+        destinations[i + 1]['lat'],
+        destinations[i + 1]['lon']
+      ).multiplyScalar(EARTH_RADIUS)
+    }
+
     let angle = fromVector.angleTo(toVector)
     let dist = fromVector.distanceTo(toVector)
     let controlFromVector = fromVector.clone()
@@ -155,21 +167,62 @@ export const toEuler = (x, y, z, angle) => {
   }
 }
 
-// start here
-export const getPathToNextFocus = (cameraPosition, locations, currentRotation) => {
-  let nextFocus = locations[0]
+export const getPathToNearestFocus = (cameraPosition, locations, currentRotation) => {
+  console.log(cameraPosition)
+  let nearestLocation = locations[0]
   let currentAdjustedPosition = cameraPosition.clone().applyQuaternion(currentRotation.clone().inverse())
-  let minAngle = Math.abs(locations[0].angle.clone().distanceTo(currentAdjustedPosition))
-
+  let minAngle = Math.abs(locations[0].angle.clone().angleTo(currentAdjustedPosition))
+  // let indexOfNearest = 0
   locations.slice(1).map((location, index) => {
-    if (Math.abs(location.angle.clone().distanceTo(currentAdjustedPosition)) < minAngle) {
-      nextFocus = location
+    let angle = Math.abs(location.angle.clone().angleTo(currentAdjustedPosition))
+    if (angle < minAngle) {
+      nearestLocation = location
+      minAngle = angle
+      // indexOfNearest = index
     }
   })
-  console.log(locations)
-  console.log(nextFocus)
+  return getTravelPath([currentAdjustedPosition, nearestLocation])
+}
+
+// start here
+export const getPathToNextFocus = (cameraPosition, locations, currentRotation) => {
+  let currentAdjustedPosition = cameraPosition.clone().applyQuaternion(currentRotation.clone().inverse())
+  let minDist = Math.abs(locations[0].angle.clone().distanceTo(currentAdjustedPosition))
+  let indexOfNearest = 0
+  locations.slice(1).map((location, index) => {
+    let dist = Math.abs(location.angle.clone().distanceTo(currentAdjustedPosition))
+    if (dist < minDist) {
+      minDist = dist
+      indexOfNearest = index
+    }
+  })
+  return getTravelPath([currentAdjustedPosition, locations[locations.length % (indexOfNearest + 1)]])
 }
 
 export const getPathToPreviousFocus = (cameraPosition, locations, currentRotation) => {
+  let currentAdjustedPosition = cameraPosition.clone().applyQuaternion(currentRotation.clone().inverse())
+  let minDist = Math.abs(locations[0].angle.clone().distanceTo(currentAdjustedPosition))
+  let indexOfNearest = 0
+  locations.slice(1).map((location, index) => {
+    let dist = Math.abs(location.angle.clone().distanceTo(currentAdjustedPosition))
+    if (dist < minDist) {
+      minDist = dist
+      indexOfNearest = index
+    }
+  })
+  if (indexOfNearest === 0) {
+    indexOfNearest = locations.length
+  }
+  return getTravelPath([currentAdjustedPosition, locations[locations.length % (indexOfNearest - 1)]])
+}
 
+export const compressDuplicateLocations = (locations) => {
+  if (locations.length > 1) {
+    if (locations[0].lat === locations[1].lat && locations[0].lon === locations[1].lon) {
+      locations[1].content = locations[0].content.concat(locations[1].content)
+      locations.shift()
+    }
+    locations = [locations[0]].concat(compressDuplicateLocations(locations.slice(1)))
+  }
+  return locations
 }

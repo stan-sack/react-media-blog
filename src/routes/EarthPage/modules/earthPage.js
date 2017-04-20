@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-import { getTravelPath,
-  // getPathToNextFocus, getPathToPreviousFocus,
-  convertLatLonToVec3 } from '../../../helpers/geometryHelpers'
+import { getTravelPath, getPathToNextFocus, getPathToPreviousFocus,
+  convertLatLonToVec3, compressDuplicateLocations,
+  getPathToNearestFocus } from '../../../helpers/geometryHelpers'
 import { EARTH_RADIUS, ACCELERATION } from '../../../constants/ThreeGeomerty'
 // ------------------------------------
 // Constants
@@ -17,6 +17,7 @@ export const UPDATE_TOUCH_ENABLED = 'UPDATE_TOUCH_ENABLED'
 export const INJECT_FACEBOOK_PHOTOS = 'INJECT_FACEBOOK_PHOTOS'
 export const FOCUS_NEXT = 'FOCUS_NEXT'
 export const FOCUS_PREVIOUS = 'FOCUS_PREVIOUS'
+export const FOCUS_NEAREST = 'FOCUS_NEAREST'
 
 // ------------------------------------
 // Actions
@@ -38,6 +39,7 @@ export const calculateNextFrame = (props) => {
   let newCameraPosition = props.cameraPosition.normalize().multiplyScalar(props.cameraDistance)
   let newVelocityScalar = 0.01
   let newControlState = props.controlState
+  let newFocusPath = props.focusPath
 
   // we will get this callback every frame
   if (props.controlState === 'auto') {
@@ -81,7 +83,14 @@ export const calculateNextFrame = (props) => {
   } else if (props.controlState === 'focus') {
     // do nothing here yet
   } else if (props.controlState === 'switchingFocus') {
-    console.log('switchingFocus')
+    let currentPos = props.focusPath[1].clone()
+    let camToCurrentPos = new THREE.Quaternion().setFromUnitVectors(currentPos, newCameraPosition.clone().normalize())
+    newEarthRotation = camToCurrentPos.clone()
+
+    newFocusPath = props.focusPath.slice(1)
+    if (newFocusPath.length === 1) {
+      newControlState = 'focus'
+    }
   }
 
   nextPrimaryMarkerPosition = props.primaryMarkerPosition + 1
@@ -98,7 +107,8 @@ export const calculateNextFrame = (props) => {
       cameraPosition: newCameraPosition,
       earthRotation: newEarthRotation,
       velocityScalar: newVelocityScalar,
-      controlState: newControlState
+      controlState: newControlState,
+      focusPath: newFocusPath
     }
   }
 }
@@ -120,18 +130,35 @@ export const initialiseVelocityCentre = (windowWidth, windowHeight) => {
 }
 
 export const focusNext = (currentPos, locations, earthRotation) => {
-  // let path = getPathToNextFocus(currentPos, locations, earthRotation)
+  let path = getPathToNextFocus(currentPos, locations, earthRotation)
   return {
     type: FOCUS_NEXT,
-    payload: undefined
+    payload: {
+      focusPath: path,
+      controlState: 'switchingFocus'
+    }
   }
 }
 
 export const focusPrevious = (currentPos, locations, earthRotation) => {
-  // let path = getPathToPreviousFocus(currentPos, locations, earthRotation)
+  let path = getPathToPreviousFocus(currentPos, locations, earthRotation)
   return {
     type: FOCUS_PREVIOUS,
-    payload: undefined
+    payload: {
+      focusPath: path,
+      controlState: 'switchingFocus'
+    }
+  }
+}
+
+export const focusNearest = (currentPos, locations, earthRotation) => {
+  let path = getPathToNearestFocus(currentPos, locations, earthRotation)
+  return {
+    type: FOCUS_NEAREST,
+    payload: {
+      focusPath: path,
+      controlState: 'switchingFocus'
+    }
   }
 }
 
@@ -201,6 +228,8 @@ export const updateControlState = (newState) => {
 }
 
 export const injectFacebookPhotos = (newLocations) => {
+  newLocations = compressDuplicateLocations(newLocations)
+  console.log(newLocations)
   return {
     type    : INJECT_FACEBOOK_PHOTOS,
     payload : {
@@ -221,11 +250,13 @@ export const fetchFacebookPhotos = () => {
           lat: photo.location.latitude,
           lon: photo.location.longitude,
           angle: convertLatLonToVec3(photo.location.latitude, photo.location.longitude).normalize(),
-          text: photo.caption
-          // photo: Promise.all(fetch('http://nemanjakovacevic.net/wp-content/uploads/2013/07/placeholder.png'))
+          content: [{
+            text: photo.caption
+            // photo: fetch('http://nemanjakovacevic.net/wp-content/uploads/2013/07/placeholder.png')
+          }]
         }
       })))
-      // inject lsat 20 posts
+      // inject last 20 posts
       .then((locations) => dispatch(injectFacebookPhotos(locations.slice(Math.max(locations.length - 20, 1)))))
       .catch((error) => console.log(error))
     )
@@ -262,7 +293,8 @@ const ACTION_HANDLERS = {
       cameraPosition: action.payload.cameraPosition,
       earthRotation: action.payload.earthRotation,
       velocityScalar: action.payload.velocityScalar,
-      controlState: action.payload.controlState
+      controlState: action.payload.controlState,
+      focusPath: action.payload.focusPath
     })
   },
   [UPDATE_WINDOW_SIZE]: (state, action) => {
@@ -307,6 +339,24 @@ const ACTION_HANDLERS = {
     return Object.assign({}, state, {
       travelPath: action.payload.travelPath,
       locations: action.payload.locations
+    })
+  },
+  [FOCUS_NEXT]: (state, action) => {
+    return Object.assign({}, state, {
+      focusPath: action.payload.focusPath,
+      controlState: action.payload.controlState
+    })
+  },
+  [FOCUS_PREVIOUS]: (state, action) => {
+    return Object.assign({}, state, {
+      focusPath: action.payload.focusPath,
+      controlState: action.payload.controlState
+    })
+  },
+  [FOCUS_NEAREST]: (state, action) => {
+    return Object.assign({}, state, {
+      focusPath: action.payload.focusPath,
+      controlState: action.payload.controlState
     })
   }
 }

@@ -3,7 +3,7 @@ import { bindActionCreators } from 'redux'
 import { calculateNextFrame, setManualRenderTrigger, updateWindowSize,
   updateCameraDistance, updateControlState, initialiseVelocityCentre,
   updateVelocityPair, updateTouchEnabled, focusNext,
-  focusPrevious } from '../modules/earthPage'
+  focusPrevious, focusNearest } from '../modules/earthPage'
 
 /*  This is a container component. Notice it does not contain any JSX,
 nor does it import React. This component is **only** responsible for
@@ -26,7 +26,8 @@ const mapDispatchToProps = (dispatch) => (
     updateVelocityPair,
     updateTouchEnabled,
     focusNext,
-    focusPrevious
+    focusPrevious,
+    focusNearest
   }, dispatch)
 )
 

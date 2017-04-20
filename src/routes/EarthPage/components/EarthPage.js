@@ -42,11 +42,17 @@ class EarthPage extends React.Component {
   }
   handleKeyPress = (event) => {
     if (event.keyCode === KEY_CODES.RIGHT_ARROW) {
-      this.props.updateControlState('switchingFocus')
-      this.props.focusNext(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+      if (this.props.controlState !== 'focus' && this.props.controlState !== 'switchingFocus') {
+        this.props.focusNearest(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+      } else if (this.props.controlState === 'focus') {
+        this.props.focusNext(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+      }
     } else if (event.keyCode === KEY_CODES.LEFT_ARROW) {
-      this.props.updateControlState('switchingFocus')
-      this.props.focusPrevious(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+      if (this.props.controlState !== 'focus' && this.props.controlState !== 'switchingFocus') {
+        this.props.focusNearest(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+      } else if (this.props.controlState === 'focus') {
+        this.props.focusPrevious(this.props.cameraPosition, this.props.locations, this.props.earthRotation)
+      }
     }
   }
   handleMouseScroll = (event) => {
@@ -151,7 +157,9 @@ EarthPage.propTypes = {
   updateTouchEnabled: PropTypes.func,
   focusNext: PropTypes.func,
   focusPrevious: PropTypes.func,
-  touchEnabled: PropTypes.bool
+  focusNearest: PropTypes.func,
+  touchEnabled: PropTypes.bool,
+  controlState: PropTypes.string
 }
 
 export default EarthPage
