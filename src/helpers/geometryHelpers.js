@@ -6,7 +6,6 @@ export const createSphereArcs = (destinations) => {
   let i = 0
   let travelPath = []
   while (i < destinations.length - 1) {
-
     let fromVector = destinations[i]
     if (!('x' in fromVector)) {
       fromVector = convertLatLonToVec3(
