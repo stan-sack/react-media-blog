@@ -36,7 +36,7 @@
       }
     },
     "deploy": {
-      "command": "npm run lint && npm run test && npm run clean && npm run compile",
+      "command": "npm run lint && npm run clean && npm run compile",
       "env": {
         "DEBUG": "app:*"
       }
@@ -137,7 +137,7 @@
     "karma-coverage": "^1.0.0",
     "karma-mocha": "^1.0.1",
     "karma-mocha-reporter": "^2.0.0",
-    "karma-phantomjs-launcher": "^1.0.2",
+    "karma-phantomjs-launcher": "^1.0.4",
     "karma-webpack-with-fast-source-maps": "^1.9.2",
     "mocha": "^3.0.1",
     "nodemon": "^1.10.2",
