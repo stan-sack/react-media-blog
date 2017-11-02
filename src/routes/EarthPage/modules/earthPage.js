@@ -257,7 +257,6 @@ export const fetchFacebookPhotos = () => {
       })))
       // inject last 20 posts
       .then((locations) => dispatch(injectFacebookPhotos(locations.slice(Math.max(locations.length - 20, 1)))))
-      .catch((error) => {})
     )
   }
 }
