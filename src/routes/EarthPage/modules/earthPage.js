@@ -270,16 +270,6 @@ export const fetchAllData = () => {
   }
 }
 
-// export const actions = {
-//   calculateNextFrame,
-//   updateWindowSize,
-//   setManualRenderTrigger,
-//   updateCameraDistance,
-//   updateControlState,
-//   updateTouchEnabled,
-//   updateVelocityPair,
-//   fetchAllData
-// }
 
 // ------------------------------------
 // Action Handlers
