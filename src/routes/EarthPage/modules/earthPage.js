@@ -270,10 +270,6 @@ export const fetchAllData = () => {
   }
 }
 
-
-// ------------------------------------
-// Action Handlers
-// ------------------------------------
 const ACTION_HANDLERS = {
   [UPDATE_ANIMATION]: (state, action) => {
     return Object.assign({}, state, {
