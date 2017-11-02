@@ -167,7 +167,6 @@ export const toEuler = (x, y, z, angle) => {
 }
 
 export const getPathToNearestFocus = (cameraPosition, locations, currentRotation) => {
-  console.log(cameraPosition)
   let nearestLocation = locations[0]
   let currentAdjustedPosition = cameraPosition.clone().applyQuaternion(currentRotation.clone().inverse())
   let minAngle = Math.abs(locations[0].angle.clone().angleTo(currentAdjustedPosition))

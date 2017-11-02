@@ -229,7 +229,6 @@ export const updateControlState = (newState) => {
 
 export const injectFacebookPhotos = (newLocations) => {
   newLocations = compressDuplicateLocations(newLocations)
-  console.log(newLocations)
   return {
     type    : INJECT_FACEBOOK_PHOTOS,
     payload : {
@@ -258,7 +257,7 @@ export const fetchFacebookPhotos = () => {
       })))
       // inject last 20 posts
       .then((locations) => dispatch(injectFacebookPhotos(locations.slice(Math.max(locations.length - 20, 1)))))
-      .catch((error) => console.log(error))
+      .catch((error) => {})
     )
   }
 }

@@ -3,8 +3,8 @@ import React from 'react'
 import './Footer.scss'
 
 export const Footer = () => (
-  <div className='footer'>
-    This is the footer
+  <div className='footer' draggable='false'>
+      Stan Tsouvallas
   </div>
 )
 

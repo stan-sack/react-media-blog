@@ -1,7 +1,6 @@
 // We only need to import the modules necessary for initial render
 import CoreLayout from '../layouts/CoreLayout'
-import Home from './Home'
-import CounterRoute from './Counter'
+// import Home from './Home'
 import EarthPageRoute from './EarthPage'
 
 /*  Note: Instead of using JSX, we recommend using react-router
@@ -10,11 +9,7 @@ import EarthPageRoute from './EarthPage'
 export const createRoutes = (store) => ({
   path        : '/',
   component   : CoreLayout,
-  indexRoute  : Home,
-  childRoutes : [
-    CounterRoute(store),
-    EarthPageRoute(store)
-  ]
+  indexRoute  : EarthPageRoute(store)
 })
 
 /*  Note: childRoutes can be chunked or otherwise loaded programmatically

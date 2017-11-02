@@ -4,13 +4,14 @@ import Earth from 'components/Earth'
 import { ANIMATION_FPS } from '../../../constants/ThreeGeomerty'
 import { KEY_CODES } from '../../../constants/Meta'
 import Hammer from 'react-hammerjs'
+import BlankImage from '../assets/blank-image.png'
 // import EarthOverlay from 'components/EarthOverlay'
 
 class EarthPage extends React.Component {
   constructor (props, context) {
     super(props, context)
     this.updateDimensions = () => {
-      this.props.updateWindowSize(window.innerWidth, window.innerHeight)
+      this.props.updateWindowSize(window.innerWidth, window.innerHeight * 1.05)
     //   this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     }
     this.updateTouchEnabled = () => {
@@ -21,7 +22,7 @@ class EarthPage extends React.Component {
     window.addEventListener('resize', this.updateDimensions)
     window.addEventListener('touchstart', this.updateTouchEnabled)
     document.addEventListener('keydown', this.handleKeyPress, false)
-    this.props.updateWindowSize(window.innerWidth, window.innerHeight)
+    this.props.updateWindowSize(window.innerWidth, window.innerHeight * 1.05)
     // this.props.initialiseVelocityCentre(window.innerWidth, window.innerHeight)
     this.refs.earthContainer.addEventListener('mousewheel', this.handleMouseScroll, false)
     this.refs.earthContainer.addEventListener('DOMMouseScroll', this.handleMouseScroll, false)
@@ -61,6 +62,11 @@ class EarthPage extends React.Component {
   }
   handleMouseDrag = (event) => {
     if (event.type === 'dragstart') {
+      let blankImage = new Image()
+      blankImage.src = BlankImage
+      event.dataTransfer.dropEffect = 'none'
+      event.dataTransfer.effectAllowed = 'none'
+      event.dataTransfer.setDragImage(blankImage, 0, 0)
       this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
       this.props.updateVelocityPair(event.screenX, this.props.height - event.screenY)
       this.props.updateControlState('drag')
@@ -72,6 +78,7 @@ class EarthPage extends React.Component {
     } else if (event.type === 'dragend') {
       this.props.updateControlState('rolling')
     }
+    return true
   }
   handleSwipe = (event) => {
     this.props.updateVelocityPair(0, 0)
@@ -114,7 +121,7 @@ class EarthPage extends React.Component {
       )
     } else {
       return (
-        <div ref='earthContainer' draggable='true'>
+        <div ref='earthContainer' draggable='true' className='wrapper'>
           <Earth
             width={this.props.width}
             height={this.props.height}

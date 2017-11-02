@@ -2,7 +2,6 @@ import { injectReducer } from '../../store/reducers'
 import { fetchAllData } from './modules/earthPage'
 
 export default (store) => ({
-  path : 'earth-page',
   /*  Async getComponent is only invoked when route matches   */
   getComponent (nextState, cb) {
     /*  Webpack - use 'require.ensure' to create a split point

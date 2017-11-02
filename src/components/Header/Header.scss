@@ -4,7 +4,13 @@
 }
 
 .header {
-  height: 5%;
+  position: fixed;
+  padding: 20px;
+  width: 100%;
+  background-color: black;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
 }
 
 .h1 {

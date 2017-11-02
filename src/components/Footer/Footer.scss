@@ -4,7 +4,15 @@
 }
 
 .footer {
-  height: 5%;
+  flex-direction: column;
+  justify-content: center;
+  height: 80%;
+  width: 100%;
+  padding-top: 10px;
+  background-color: black;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  position: fixed;
 }
 
 .h1 {

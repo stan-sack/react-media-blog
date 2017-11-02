@@ -55,9 +55,7 @@ export const Earth = (props) => (
         {generateComet(props)}
         {plotPoints(props.locations)}
         {createSphereArcs(props.locations).map(drawCurves)}
-        <axisHelper size={10} />
       </group>
-      <axisHelper size={10} />
     </scene>
   </React3>
 )
